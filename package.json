@@ -1,5 +1,5 @@
 {
-  "name": "fastapi-full-stack-template",
+  "name": "nodepad",
   "private": true,
   "workspaces": [
     "frontend"
