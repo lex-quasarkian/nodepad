@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 requires-python = ">=3.10,<4.0"
 dependencies = [
-    "fastapi[standard]<1.0.0,>=0.114.2",
+    "fastapi[standard]<1.0.0,>=0.135.1",
     "python-multipart<1.0.0,>=0.0.7",
     "email-validator<3.0.0.0,>=2.1.0.post1",
     "tenacity<9.0.0,>=8.2.3",
@@ -14,11 +14,12 @@ dependencies = [
     "alembic<2.0.0,>=1.12.1",
     "httpx<1.0.0,>=0.25.1",
     "psycopg[binary]<4.0.0,>=3.1.13",
-    "sqlmodel<1.0.0,>=0.0.21",
     "pydantic-settings<3.0.0,>=2.2.1",
     "sentry-sdk[fastapi]>=2.0.0,<3.0.0",
     "pyjwt<3.0.0,>=2.8.0",
     "pwdlib[argon2,bcrypt]>=0.3.0",
+    "sqlalchemy==2.1.0b1",
+    "starlette==1.0.0rc1",
 ]
 
 [dependency-groups]
