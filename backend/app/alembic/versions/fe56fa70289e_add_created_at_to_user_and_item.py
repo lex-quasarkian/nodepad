@@ -28,7 +28,7 @@ def upgrade() -> None:
         sa.Column(
             "id",
             postgresql.UUID(as_uuid=True),
-            server_default=sa.text("uuid_generate_v4()"),
+            server_default=sa.text("uuidv7"),
             nullable=False,
         ),
         sa.Column("hashed_password", sa.String(), nullable=False),
@@ -43,7 +43,7 @@ def upgrade() -> None:
         sa.Column(
             "id",
             postgresql.UUID(as_uuid=True),
-            server_default=sa.text("uuid_generate_v4()"),
+            server_default=sa.text("uuidv7"),
             nullable=False,
         ),
         sa.Column("title", sa.String(length=255), nullable=False),
