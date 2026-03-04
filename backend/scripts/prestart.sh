@@ -3,11 +3,16 @@
 set -e
 set -x
 
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+BACKEND_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+
+cd "$BACKEND_DIR"
+
 # Let the DB start
-python app/backend_pre_start.py
+uv run python app/backend_pre_start.py
 
 # Run migrations
-alembic upgrade head
+uv run alembic upgrade head
 
 # Create initial data in DB
-python app/initial_data.py
+uv run python app/initial_data.py
