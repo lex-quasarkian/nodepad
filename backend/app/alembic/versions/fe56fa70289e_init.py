@@ -5,6 +5,7 @@ Revises:
 Create Date: 2026-01-23 15:50:37.171462
 
 """
+from edwh_uuid7 import uuid7
 from alembic import op
 from sqlalchemy.dialects import postgresql
 import sqlalchemy as sa
@@ -28,7 +29,7 @@ def upgrade() -> None:
         sa.Column(
             "id",
             postgresql.UUID(as_uuid=True),
-            server_default=sa.text("uuidv7"),
+            default=uuid7,
             nullable=False,
         ),
         sa.Column("hashed_password", sa.String(), nullable=False),
@@ -38,12 +39,12 @@ def upgrade() -> None:
     op.create_index(op.f("ix_user_email"), "user", ["email"], unique=True)
 
     op.create_table(
-        "item",
+        "list",
         sa.Column("description", sa.String(length=255), nullable=True),
         sa.Column(
             "id",
             postgresql.UUID(as_uuid=True),
-            server_default=sa.text("uuidv7"),
+            default=uuid7,
             nullable=False,
         ),
         sa.Column("title", sa.String(length=255), nullable=False),
@@ -55,6 +56,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_table("item")
+    op.drop_table("list")
     op.drop_index(op.f("ix_user_email"), table_name="user")
     op.drop_table("user")
