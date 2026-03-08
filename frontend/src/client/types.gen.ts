@@ -113,37 +113,37 @@ export type ValidationError = {
     };
 };
 
-export type ItemsReadItemsData = {
+export type ListsReadListsData = {
     limit?: number;
     skip?: number;
 };
 
-export type ItemsReadItemsResponse = (ItemsPublic);
+export type ListsReadListsResponse = (ListsPublic);
 
-export type ItemsCreateItemData = {
-    requestBody: ItemCreate;
+export type ListsCreateListData = {
+    requestBody: ListCreate;
 };
 
-export type ItemsCreateItemResponse = (ItemPublic);
+export type ListsCreateListResponse = (ListPublic);
 
-export type ItemsReadItemData = {
+export type ListsReadListData = {
     id: string;
 };
 
-export type ItemsReadItemResponse = (ItemPublic);
+export type ListsReadListResponse = (ListPublic);
 
-export type ItemsUpdateItemData = {
+export type ListsUpdateListData = {
     id: string;
-    requestBody: ItemUpdate;
+    requestBody: ListUpdate;
 };
 
-export type ItemsUpdateItemResponse = (ItemPublic);
+export type ListsUpdateListResponse = (ListPublic);
 
-export type ItemsDeleteItemData = {
+export type ListsDeleteListData = {
     id: string;
 };
 
-export type ItemsDeleteItemResponse = (Message);
+export type ListsDeleteListResponse = (Message);
 
 export type LoginLoginAccessTokenData = {
     formData: Body_login_login_access_token;
