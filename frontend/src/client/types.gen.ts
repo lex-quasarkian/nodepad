@@ -13,12 +13,12 @@ export type HTTPValidationError = {
     detail?: Array<ValidationError>;
 };
 
-export type ItemCreate = {
+export type ListCreate = {
     title: string;
     description?: (string | null);
 };
 
-export type ItemPublic = {
+export type ListPublic = {
     title: string;
     description?: (string | null);
     id: string;
@@ -26,12 +26,12 @@ export type ItemPublic = {
     created_at?: (string | null);
 };
 
-export type ItemsPublic = {
-    data: Array<ItemPublic>;
+export type ListsPublic = {
+    data: Array<ListPublic>;
     count: number;
 };
 
-export type ItemUpdate = {
+export type ListUpdate = {
     title?: (string | null);
     description?: (string | null);
 };
