@@ -2,10 +2,14 @@ FROM mcr.microsoft.com/playwright:v1.58.2-noble
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y unzip \
+RUN apt-get update && apt-get install -y unzip  \
+    && apt-get install -y libasound2 \
     && rm -rf /var/lib/apt/lists/*
+    
 
 RUN curl -fsSL https://bun.sh/install | bash
+
+RUN bunx playwright install-deps
 ENV PATH="/root/.bun/bin:$PATH"
 
 COPY package.json bun.lock /app/
