@@ -1,9 +1,12 @@
 import uuid
 from datetime import datetime, timezone
+from decimal import Decimal
+from typing import Optional
 
 from edwh_uuid7 import uuid7
 from pydantic import EmailStr
-from sqlalchemy import DateTime
+from sqlalchemy import Column, DateTime, ForeignKey, Index, Numeric, text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -133,3 +136,72 @@ class NewPassword(SQLModel):
 class NodeBase(SQLModel):
     title: str = Field(min_length=1, max_length=255)
     content: str | None = Field(default=None, max_length=255)
+
+
+class Node(SQLModel, table=True):
+    __tablename__ = "nodes"
+
+    __table_args__ = (
+        Index(
+            "idx_nodes_list_parent_pos",
+            "list_id",
+            "parent_id",
+            "position",
+        ),
+    )
+
+    id: uuid.UUID = Field(
+        sa_column=Column(
+            UUID(as_uuid=True),
+            primary_key=True,
+        )
+    )
+
+    list_id: uuid.UUID = Field(
+        sa_column=Column(
+            UUID(as_uuid=True),
+            ForeignKey("lists.id", ondelete="CASCADE"),
+            nullable=False,
+        )
+    )
+
+    parent_id: uuid.UUID | None = Field(
+        default=None,
+        sa_column=Column(
+            UUID(as_uuid=True),
+            ForeignKey("nodes.id", ondelete="CASCADE"),
+            nullable=True,
+        ),
+    )
+
+    title: str = Field(nullable=False)
+
+    position: Decimal = Field(
+        sa_column=Column(
+            Numeric(30, 15),
+            nullable=False,
+        )
+    )
+
+    created_at: datetime = Field(
+        sa_column=Column(
+            nullable=False,
+            server_default=text("now()"),
+        )
+    )
+
+    updated_at: datetime = Field(
+        sa_column=Column(
+            nullable=False,
+            server_default=text("now()"),
+        )
+    )
+
+    # relationships
+
+    parent: Optional["Node"] = Relationship(
+        back_populates="children",
+        sa_relationship_kwargs={"remote_side": "Node.id"},
+    )
+
+    children: List["Node"] = Relationship(back_populates="parent")
