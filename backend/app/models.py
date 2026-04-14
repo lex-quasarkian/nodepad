@@ -5,7 +5,7 @@ from typing import Optional
 
 from edwh_uuid7 import uuid7
 from pydantic import EmailStr
-from sqlalchemy import Column, DateTime, ForeignKey, Index, Numeric, text
+from sqlalchemy import CheckConstraint, Column, DateTime, ForeignKey, Index, Numeric, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -139,9 +139,13 @@ class NodeBase(SQLModel):
 
 
 class Node(SQLModel, table=True):
-    __tablename__ = "nodes"
+    __tablename__ = "node"
 
     __table_args__ = (
+        CheckConstraint(
+            "parent_id IS NULL OR parent_id <> id",
+            name="ck_node_parent_not_self",
+        ),
         Index(
             "idx_nodes_list_parent_pos",
             "list_id",
@@ -160,7 +164,7 @@ class Node(SQLModel, table=True):
     list_id: uuid.UUID = Field(
         sa_column=Column(
             UUID(as_uuid=True),
-            ForeignKey("lists.id", ondelete="CASCADE"),
+            ForeignKey("list.id", ondelete="CASCADE"),
             nullable=False,
         )
     )
@@ -169,7 +173,7 @@ class Node(SQLModel, table=True):
         default=None,
         sa_column=Column(
             UUID(as_uuid=True),
-            ForeignKey("nodes.id", ondelete="CASCADE"),
+            ForeignKey("node.id", ondelete="CASCADE"),
             nullable=True,
         ),
     )
@@ -204,4 +208,4 @@ class Node(SQLModel, table=True):
         sa_relationship_kwargs={"remote_side": "Node.id"},
     )
 
-    children: List["Node"] = Relationship(back_populates="parent")
+    children: list["Node"] = Relationship(back_populates="parent")
