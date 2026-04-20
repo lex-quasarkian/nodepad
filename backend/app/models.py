@@ -5,7 +5,15 @@ from typing import Optional
 
 from edwh_uuid7 import uuid7
 from pydantic import EmailStr
-from sqlalchemy import CheckConstraint, Column, DateTime, ForeignKey, Index, Numeric, text
+from sqlalchemy import (
+    CheckConstraint,
+    Column,
+    DateTime,
+    ForeignKey,
+    Index,
+    Numeric,
+    text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlmodel import Field, Relationship, SQLModel
 
