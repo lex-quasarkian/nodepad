@@ -78,6 +78,14 @@ test("Log in with invalid password", async ({ page }) => {
   await expect(page.getByText("Incorrect email or password")).toBeVisible()
 })
 
+test("Log in with empty password", async ({ page }) => {
+  await page.goto("/login")
+  await fillForm(page, firstSuperuser, "")
+  await page.getByRole("button", { name: "Log In" }).click()
+
+  await expect(page.getByText("Password is required")).toBeVisible()
+})
+
 test("Successful log out", async ({ page }) => {
   await page.goto("/login")
 
