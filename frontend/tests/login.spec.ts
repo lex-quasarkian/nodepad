@@ -53,10 +53,19 @@ test("Log in with valid email and password ", async ({ page }) => {
 test("Log in with invalid email", async ({ page }) => {
   await page.goto("/login")
 
+  await fillForm(page, "invalidemail@example.com", firstSuperuserPassword)
+  await page.getByRole("button", { name: "Log In" }).click()
+
+  await expect(page.getByText("Incorrect email or password")).toBeVisible()
+})
+
+test("Log in with invalid email format, no @ character", async ({ page }) => {
+  await page.goto("/login")
+
   await fillForm(page, "invalidemail", firstSuperuserPassword)
   await page.getByRole("button", { name: "Log In" }).click()
 
-  await expect(page.getByText("Invalid email address")).toBeVisible()
+  await expect(page.getByText("Invalid input")).toBeVisible()
 })
 
 test("Log in with invalid password", async ({ page }) => {
