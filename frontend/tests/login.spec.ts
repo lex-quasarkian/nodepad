@@ -65,7 +65,7 @@ test("Log in with invalid email format, no @ character", async ({ page }) => {
   await fillForm(page, "invalidemail", firstSuperuserPassword)
   await page.getByRole("button", { name: "Log In" }).click()
 
-  await expect(page.getByText("Invalid input")).toBeVisible()
+  await expect(page.getByText("Invalid email address")).toBeVisible()
 })
 
 test("Log in with invalid password", async ({ page }) => {
