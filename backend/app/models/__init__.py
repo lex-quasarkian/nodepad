@@ -1,50 +1,13 @@
-from datetime import datetime, timezone
-
-from sqlmodel import Field, SQLModel
-
-from .lists import (  # noqa: F401
-    List,
-    ListBase,
-    ListCreate,
-    ListPublic,
-    ListsPublic,
-    ListUpdate,
-    Node,
-    NodeBase,
-)
-from .users import (  # noqa: F401
-    UpdatePassword,
-    User,
-    UserBase,
-    UserCreate,
-    UserPublic,
-    UserRegister,
-    UsersPublic,
-    UserUpdate,
-    UserUpdateMe,
-)
+from sqlalchemy.orm import DeclarativeBase
 
 
-def get_datetime_utc() -> datetime:
-    return datetime.now(timezone.utc)
+class Base(DeclarativeBase):
+    """
+    Base class for all models.
+    """
+
+    pass
 
 
-# Generic message
-class Message(SQLModel):
-    message: str
-
-
-# JSON payload containing access token
-class Token(SQLModel):
-    access_token: str
-    token_type: str = "bearer"
-
-
-# Contents of JWT token
-class TokenPayload(SQLModel):
-    sub: str | None = None
-
-
-class NewPassword(SQLModel):
-    token: str
-    new_password: str = Field(min_length=8, max_length=128)
+from app.models.lists import Node, NodeList  # noqa: F401, E402
+from app.models.users import User  # noqa: F401, E402

@@ -39,7 +39,7 @@ def upgrade() -> None:
     op.create_index(op.f("ix_user_email"), "user", ["email"], unique=True)
 
     op.create_table(
-        "list",
+        "nodelist",
         sa.Column("description", sa.String(length=255), nullable=True),
         sa.Column(
             "id",
@@ -62,9 +62,9 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column(
-            "list_id",
+            "nodelist_id",
             postgresql.UUID(as_uuid=True),
-            sa.ForeignKey("list.id", ondelete="CASCADE"),
+            sa.ForeignKey("nodelist.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column(
@@ -104,13 +104,13 @@ def upgrade() -> None:
     op.create_index(
         "idx_node_list_parent_pos",
         "node",
-        ["list_id", "parent_id", "position"],
+        ["nodelist_id", "parent_id", "position"],
     )
 
 
 def downgrade() -> None:
     op.drop_table("node")
     op.drop_index("idx_node_list_parent_pos", table_name="node")
-    op.drop_table("list")
+    op.drop_table("nodelist")
     op.drop_index(op.f("ix_user_email"), table_name="user")
     op.drop_table("user")

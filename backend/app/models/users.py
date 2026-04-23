@@ -1,74 +1,31 @@
+from __future__ import annotations
 import uuid
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from edwh_uuid7 import uuid7
-from pydantic import EmailStr
-from sqlalchemy import DateTime
-from sqlmodel import Field, Relationship, SQLModel
+from sqlalchemy import DateTime, func, text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.models import Base
+
+
+class User(Base):
+    __tablename__ = "user"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid7)
+    email: Mapped[str] = mapped_column(unique=True, index=True, nullable=False)
+    is_superuser: Mapped[bool] = mapped_column(default=False)
+    is_active: Mapped[bool] = mapped_column(default=True)
+    full_name: Mapped[str] = mapped_column(nullable=True)
+    hashed_password: Mapped[str]
+    created_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    lists: Mapped[list[NodeList]] = relationship(
+        back_populates="owner", cascade="all, delete"
+    )
+
 
 if TYPE_CHECKING:
-    from .lists import List
-
-
-def get_datetime_utc():
-    from . import get_datetime_utc as _get_datetime_utc
-
-    return _get_datetime_utc()
-
-
-# Shared properties
-class UserBase(SQLModel):
-    email: EmailStr = Field(unique=True, index=True, max_length=255)
-    is_active: bool = True
-    is_superuser: bool = False
-    full_name: str | None = Field(default=None, max_length=255)
-
-
-# Properties to receive via API on creation
-class UserCreate(UserBase):
-    password: str = Field(min_length=8, max_length=128)
-
-
-class UserRegister(SQLModel):
-    email: EmailStr = Field(max_length=255)
-    password: str = Field(min_length=8, max_length=128)
-    full_name: str | None = Field(default=None, max_length=255)
-
-
-# Properties to receive via API on update, all are optional
-class UserUpdate(UserBase):
-    email: EmailStr | None = Field(default=None, max_length=255)  # type: ignore
-    password: str | None = Field(default=None, min_length=8, max_length=128)
-
-
-class UserUpdateMe(SQLModel):
-    full_name: str | None = Field(default=None, max_length=255)
-    email: EmailStr | None = Field(default=None, max_length=255)
-
-
-class UpdatePassword(SQLModel):
-    current_password: str = Field(min_length=8, max_length=128)
-    new_password: str = Field(min_length=8, max_length=128)
-
-
-# Database model, database table inferred from class name
-class User(UserBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid7, primary_key=True)
-    hashed_password: str
-    created_at: Optional[datetime] = Field(
-        default_factory=get_datetime_utc,
-        sa_type=DateTime(timezone=True),  # type: ignore
-    )
-    lists: list["List"] = Relationship(back_populates="owner", cascade_delete=True)
-
-
-# Properties to return via API, id is always required
-class UserPublic(UserBase):
-    id: uuid.UUID
-    created_at: datetime | None = None
-
-
-class UsersPublic(SQLModel):
-    data: list[UserPublic]
-    count: int
+    from .lists import NodeList

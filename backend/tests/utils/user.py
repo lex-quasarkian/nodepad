@@ -1,9 +1,10 @@
 from fastapi.testclient import TestClient
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from app import crud
 from app.core.config import settings
-from app.models import User, UserCreate, UserUpdate
+from app.models import User
+from app.schemas import UserCreate, UserUpdate
 from tests.utils.utils import random_email, random_lower_string
 
 

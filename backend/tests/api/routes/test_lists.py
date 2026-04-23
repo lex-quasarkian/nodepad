@@ -1,6 +1,6 @@
 from edwh_uuid7 import uuid7
 from fastapi.testclient import TestClient
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from tests.utils.list import create_random_list
