@@ -4,8 +4,8 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import func, select
 
-from app.api.deps import CurrentUser, SessionDep
 from app import crud
+from app.api.deps import CurrentUser, SessionDep
 from app.models import NodeList
 from app.schemas import (
     Message,

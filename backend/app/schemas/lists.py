@@ -10,15 +10,37 @@ if TYPE_CHECKING:
     from .users import User
 
 
+class NodeBase(BaseModel):
+    content: str | None = Field(default=None, max_length=255)
+
+
+class Node(NodeBase):
+    model_config = ConfigDict(from_attributes=True)
+    id: uuid.UUID
+    nodelist_id: uuid.UUID
+    parent_id: uuid.UUID | None = None
+    content: str
+    position: Decimal
+    created_at: datetime
+    updated_at: datetime
+
+
+class NodeCreate(NodeBase):
+    content: str = Field(max_length=255)
+    position: Decimal | None = Field(default=None)
+    parent_id: uuid.UUID | None = Field(default=None)
+
+
 # Shared properties
 class NodeListBase(BaseModel):
     title: str = Field(min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=255)
+    nodes: list[Node | None] = Field(default_factory=list)
 
 
 # Properties to receive on list creation
 class NodeListCreate(NodeListBase):
-    pass
+    nodes: list[NodeCreate | None] = Field(default_factory=list)
 
 
 # Properties to receive on list update
@@ -45,22 +67,3 @@ class NodeListPublic(NodeListBase):
 class NodeListsPublic(BaseModel):
     data: list[NodeListPublic]
     count: int
-
-
-class NodeBase(BaseModel):
-    title: str = Field(min_length=1, max_length=255)
-    content: str | None = Field(default=None, max_length=255)
-
-
-class Node(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    id: uuid.UUID
-    list_id: uuid.UUID
-    parent_id: uuid.UUID | None
-    title: str
-    position: Decimal
-    created_at: datetime
-    updated_at: datetime
-
-    parent: list[uuid.UUID]
-    children: list[uuid.UUID] | None = None

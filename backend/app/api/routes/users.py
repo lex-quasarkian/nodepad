@@ -2,7 +2,7 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import delete, desc, func, select
+from sqlalchemy import desc, func, select
 
 from app import crud
 from app.api.deps import (
@@ -12,7 +12,7 @@ from app.api.deps import (
 )
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
-from app.models import NodeList, User
+from app.models import User
 from app.schemas import (
     Message,
     UpdatePassword,
@@ -125,7 +125,8 @@ def read_user_me(current_user: CurrentUser) -> Any:
     """
     Get current user.
     """
-    return current_user
+    user = current_user
+    return user
 
 
 @router.delete("/me", response_model=Message)

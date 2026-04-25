@@ -2,13 +2,13 @@
 
 ## Project Context
 
-This is a backend for outliner application (nested lists). 
+This is a backend for outliner application (nested lists).
 
-Backend: FastAPI  
-ORM: SQLAlchemy 2.x  
-Migrations: Alembic  
-DB: PostgreSQL  
-Package manager: uv  
+Backend: FastAPI
+ORM: SQLAlchemy 2.x
+Migrations: Alembic
+DB: PostgreSQL
+Package manager: uv
 
 Strict typing required (mypy clean).
 
@@ -41,7 +41,7 @@ You:
 - No lazy loading in API layer
 - All queries must be explicit
 - Avoid N+1 queries
-- Avoid SQLalchemy v1 style. 
+- Avoid SQLalchemy v1 style.
 
 ---
 

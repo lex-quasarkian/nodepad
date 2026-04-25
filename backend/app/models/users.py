@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
 from edwh_uuid7 import uuid7
-from sqlalchemy import DateTime, func, text
+from sqlalchemy import DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models import Base
