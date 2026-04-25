@@ -74,7 +74,7 @@ def upgrade() -> None:
             nullable=True,
         ),
         sa.Column(
-            "title",
+            "content",
             sa.Text(),
             nullable=False,
         ),

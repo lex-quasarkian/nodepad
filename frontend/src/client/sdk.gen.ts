@@ -12,7 +12,7 @@ export class ListsService {
      * @param data The data for the request.
      * @param data.skip
      * @param data.limit
-     * @returns ListsPublic Successful Response
+     * @returns NodeListsPublic Successful Response
      * @throws ApiError
      */
     public static readLists(data: ListsReadListsData = {}): CancelablePromise<ListsReadListsResponse> {
@@ -34,7 +34,7 @@ export class ListsService {
      * Create new list.
      * @param data The data for the request.
      * @param data.requestBody
-     * @returns ListPublic Successful Response
+     * @returns NodeListPublic Successful Response
      * @throws ApiError
      */
     public static createList(data: ListsCreateListData): CancelablePromise<ListsCreateListResponse> {
@@ -54,7 +54,7 @@ export class ListsService {
      * Get list by ID.
      * @param data The data for the request.
      * @param data.id
-     * @returns ListPublic Successful Response
+     * @returns NodeListPublic Successful Response
      * @throws ApiError
      */
     public static readList(data: ListsReadListData): CancelablePromise<ListsReadListResponse> {
@@ -76,7 +76,7 @@ export class ListsService {
      * @param data The data for the request.
      * @param data.id
      * @param data.requestBody
-     * @returns ListPublic Successful Response
+     * @returns NodeListPublic Successful Response
      * @throws ApiError
      */
     public static updateList(data: ListsUpdateListData): CancelablePromise<ListsUpdateListResponse> {

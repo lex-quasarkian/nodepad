@@ -6,7 +6,7 @@ from app.core.config import settings
 from tests.utils.list import create_random_list
 
 
-def test_create_list(
+def test_create_list_without_nodes(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
     data = {"title": "Foo", "description": "Fighters"}
@@ -19,6 +19,30 @@ def test_create_list(
     content = response.json()
     assert content["title"] == data["title"]
     assert content["description"] == data["description"]
+    assert "id" in content
+    assert "owner_id" in content
+
+
+def test_create_list_with_nodes(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    data = {
+        "title": "Foo",
+        "description": "Fighters",
+        "nodes": [{"content": "bar"}, {"content": "baz"}],
+    }
+    response = client.post(
+        f"{settings.API_V1_STR}/lists/",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert content["title"] == data["title"]
+    assert content["description"] == data["description"]
+    assert len(content["nodes"]) == len(data["nodes"])
+    for i in range(len(data["nodes"])):
+        assert content["nodes"][i]["content"] == data["nodes"][i]["content"]
     assert "id" in content
     assert "owner_id" in content
 

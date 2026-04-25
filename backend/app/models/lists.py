@@ -67,7 +67,7 @@ class Node(Base):
         ForeignKey("node.id", ondelete="CASCADE"),
         nullable=True,
     )
-    title: Mapped[str] = mapped_column(nullable=False)
+    content: Mapped[str] = mapped_column(nullable=False)
     position: Mapped[Decimal] = mapped_column(
         Numeric(30, 15),
         nullable=False,

@@ -13,29 +13,6 @@ export type HTTPValidationError = {
     detail?: Array<ValidationError>;
 };
 
-export type ListCreate = {
-    title: string;
-    description?: (string | null);
-};
-
-export type ListPublic = {
-    title: string;
-    description?: (string | null);
-    id: string;
-    owner_id: string;
-    created_at?: (string | null);
-};
-
-export type ListsPublic = {
-    data: Array<ListPublic>;
-    count: number;
-};
-
-export type ListUpdate = {
-    title?: (string | null);
-    description?: (string | null);
-};
-
 export type Message = {
     message: string;
 };
@@ -43,6 +20,58 @@ export type Message = {
 export type NewPassword = {
     token: string;
     new_password: string;
+};
+
+export type Node_Input = {
+    content: string;
+    id: string;
+    nodelist_id: string;
+    parent_id?: (string | null);
+    position: (number | string);
+    created_at: string;
+    updated_at: string;
+};
+
+export type Node_Output = {
+    content: string;
+    id: string;
+    nodelist_id: string;
+    parent_id?: (string | null);
+    position: string;
+    created_at: string;
+    updated_at: string;
+};
+
+export type NodeCreate = {
+    content: string;
+    position?: (number | string | null);
+    parent_id?: (string | null);
+};
+
+export type NodeListCreate = {
+    title: string;
+    description?: (string | null);
+    nodes?: Array<(NodeCreate | null)>;
+};
+
+export type NodeListPublic = {
+    title: string;
+    description?: (string | null);
+    nodes?: Array<(Node_Output | null)>;
+    id: string;
+    owner_id: string;
+    created_at?: (string | null);
+};
+
+export type NodeListsPublic = {
+    data: Array<NodeListPublic>;
+    count: number;
+};
+
+export type NodeListUpdate = {
+    title?: (string | null);
+    description?: (string | null);
+    nodes?: Array<(Node_Input | null)>;
 };
 
 export type PrivateUserCreate = {
@@ -118,26 +147,26 @@ export type ListsReadListsData = {
     skip?: number;
 };
 
-export type ListsReadListsResponse = (ListsPublic);
+export type ListsReadListsResponse = (NodeListsPublic);
 
 export type ListsCreateListData = {
-    requestBody: ListCreate;
+    requestBody: NodeListCreate;
 };
 
-export type ListsCreateListResponse = (ListPublic);
+export type ListsCreateListResponse = (NodeListPublic);
 
 export type ListsReadListData = {
     id: string;
 };
 
-export type ListsReadListResponse = (ListPublic);
+export type ListsReadListResponse = (NodeListPublic);
 
 export type ListsUpdateListData = {
     id: string;
-    requestBody: ListUpdate;
+    requestBody: NodeListUpdate;
 };
 
-export type ListsUpdateListResponse = (ListPublic);
+export type ListsUpdateListResponse = (NodeListPublic);
 
 export type ListsDeleteListData = {
     id: string;
