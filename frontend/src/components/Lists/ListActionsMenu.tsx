@@ -1,7 +1,7 @@
 import { EllipsisVertical } from "lucide-react"
 import { useState } from "react"
 
-import type { ListPublic } from "@/client"
+import type { NodeListPublic } from "@/client"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -12,7 +12,7 @@ import DeleteList from "./DeleteList"
 import EditList from "./EditList"
 
 interface ListActionsMenuProps {
-  list: ListPublic
+  list: NodeListPublic
 }
 
 export const ListActionsMenu = ({ list }: ListActionsMenuProps) => {

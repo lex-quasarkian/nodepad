@@ -5,7 +5,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { type ListCreate, ListsService } from "@/client"
+import { type NodeListCreate, ListsService } from "@/client"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -53,7 +53,7 @@ const AddList = () => {
   })
 
   const mutation = useMutation({
-    mutationFn: (data: ListCreate) =>
+    mutationFn: (data: NodeListCreate) =>
       ListsService.createList({ requestBody: data }),
     onSuccess: () => {
       showSuccessToast("List created successfully")

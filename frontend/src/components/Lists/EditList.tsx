@@ -5,7 +5,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { type ListPublic, ListsService } from "@/client"
+import { type NodeListPublic, ListsService } from "@/client"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -38,7 +38,7 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>
 
 interface EditListProps {
-  list: ListPublic
+  list: NodeListPublic
   onSuccess: () => void
 }
 
