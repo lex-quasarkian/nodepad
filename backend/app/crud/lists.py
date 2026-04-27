@@ -10,7 +10,7 @@ def create_list(
     *, session: Session, list_in: NodeListCreate, owner_id: uuid.UUID
 ) -> models.NodeList:
     db_list = models.NodeList(
-        **list_in.model_dump(exclude={"nodes"}), owner_id=owner_id
+        **list_in.model_dump(exclude_unset=True, exclude={"nodes"}), owner_id=owner_id
     )
     session.add(db_list)
 

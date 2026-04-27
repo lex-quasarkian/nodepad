@@ -4,7 +4,6 @@ from .lists import (  # noqa: F401
     Node,
     NodeBase,
     NodeCreate,
-    NodeList,
     NodeListBase,
     NodeListCreate,
     NodeListPublic,

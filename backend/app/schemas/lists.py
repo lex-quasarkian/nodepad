@@ -1,13 +1,12 @@
 import uuid
 from datetime import datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
-from edwh_uuid7 import uuid7
 from pydantic import BaseModel, ConfigDict, Field
 
 if TYPE_CHECKING:
-    from .users import User
+    pass
 
 
 class NodeBase(BaseModel):
@@ -16,6 +15,7 @@ class NodeBase(BaseModel):
 
 class Node(NodeBase):
     model_config = ConfigDict(from_attributes=True)
+
     id: uuid.UUID
     nodelist_id: uuid.UUID
     parent_id: uuid.UUID | None = None
@@ -47,13 +47,6 @@ class NodeListCreate(NodeListBase):
 class NodeListUpdate(NodeListBase):
     title: str | None = Field(default=None, min_length=1, max_length=255)
 
-
-# Database model, database table inferred from class name
-class NodeList(NodeListBase):
-    id: uuid.UUID = Field(default_factory=uuid7)
-    created_at: datetime | None = Field()
-    owner_id: uuid.UUID
-    owner: Optional["User"]
 
 
 # Properties to return via API, id is always required

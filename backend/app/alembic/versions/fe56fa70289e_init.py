@@ -33,7 +33,8 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("hashed_password", sa.String(), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False,  server_default=sa.func.now()),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True, onupdate=sa.func.now()),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_user_email"), "user", ["email"], unique=True)
@@ -48,7 +49,8 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("title", sa.String(length=255), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("owner_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.ForeignKeyConstraint(["owner_id"], ["user.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
@@ -85,15 +87,15 @@ def upgrade() -> None:
         ),
         sa.Column(
             "created_at",
-            sa.DateTime(),
+            sa.DateTime(timezone=True),
             nullable=False,
-            server_default=sa.text("now()"),
+            server_default=sa.func.now(),
         ),
         sa.Column(
             "updated_at",
-            sa.DateTime(),
-            nullable=False,
-            server_default=sa.text("now()"),
+            sa.DateTime(timezone=True),
+            nullable=True,
+            onupdate=sa.func.now(),
         ),
         sa.CheckConstraint(
             "parent_id IS NULL OR parent_id <> id",
