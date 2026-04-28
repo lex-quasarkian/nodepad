@@ -98,13 +98,10 @@ def update_list(
         raise HTTPException(status_code=404, detail="List not found")
     if not current_user.is_superuser and (list_obj.owner_id != current_user.id):
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    update_dict = list_in.model_dump(exclude_unset=True)
-    for key, value in update_dict.items():
-        setattr(list_obj, key, value)
 
-    session.add(list_obj)
-    session.commit()
-    session.refresh(list_obj)
+    list_obj = crud.lists.update_list(
+        session=session, db_list=list_obj, list_in=list_in
+    )
 
     return list_obj
 

@@ -41,7 +41,7 @@ class NodeList(Base):
     )
     owner: Mapped[User | None] = relationship(back_populates="lists")
     nodes: Mapped[list[Node]] = relationship(
-        back_populates="nodelist", cascade="all, delete-orphan"
+        back_populates="nodelist", cascade="all, delete-orphan", order_by="Node.position"
     )
 
 
@@ -90,4 +90,6 @@ class Node(Base):
         remote_side="Node.id",
     )
 
-    children: Mapped[list[Node]] = relationship(back_populates="parent")
+    children: Mapped[list[Node]] = relationship(
+        back_populates="parent", order_by="Node.position"
+    )
