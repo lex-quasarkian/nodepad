@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ListsReadListsData, ListsReadListsResponse, ListsCreateListData, ListsCreateListResponse, ListsReadListData, ListsReadListResponse, ListsUpdateListData, ListsUpdateListResponse, ListsDeleteListData, ListsDeleteListResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { ListsReadListsData, ListsReadListsResponse, ListsCreateListData, ListsCreateListResponse, ListsReadListData, ListsReadListResponse, ListsUpdateListData, ListsUpdateListResponse, ListsDeleteListData, ListsDeleteListResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, NodesCreateNodeData, NodesCreateNodeResponse, NodesPatchNodeData, NodesPatchNodeResponse, NodesReorderNodeData, NodesReorderNodeResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
 
 export class ListsService {
     /**
@@ -205,6 +205,83 @@ export class LoginService {
             url: '/api/v1/password-recovery-html-content/{email}',
             path: {
                 email: data.email
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
+
+export class NodesService {
+    /**
+     * Create Node
+     * Create a new node.
+     * @param data The data for the request.
+     * @param data.nodelistId
+     * @param data.requestBody
+     * @returns Node Successful Response
+     * @throws ApiError
+     */
+    public static createNode(data: NodesCreateNodeData): CancelablePromise<NodesCreateNodeResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/nodes/',
+            query: {
+                nodelist_id: data.nodelistId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Patch Node
+     * Update a node.
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.requestBody
+     * @returns Node Successful Response
+     * @throws ApiError
+     */
+    public static patchNode(data: NodesPatchNodeData): CancelablePromise<NodesPatchNodeResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/nodes/{id}',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Reorder Node
+     * Reorder node.
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.beforeId
+     * @param data.afterId
+     * @returns Node Successful Response
+     * @throws ApiError
+     */
+    public static reorderNode(data: NodesReorderNodeData): CancelablePromise<NodesReorderNodeResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/nodes/{id}/reorder',
+            path: {
+                id: data.id
+            },
+            query: {
+                before_id: data.beforeId,
+                after_id: data.afterId
             },
             errors: {
                 422: 'Validation Error'

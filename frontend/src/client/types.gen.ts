@@ -30,10 +30,13 @@ export type Node = {
     position: string;
     created_at: string;
     updated_at?: (string | null);
+    path: string;
+    level: number;
 };
 
 export type NodeCreate = {
     content: string;
+    id?: (string | null);
     position?: (number | string | null);
     parent_id?: (string | null);
     updated_at?: (string | null);
@@ -67,10 +70,11 @@ export type NodeListUpdate = {
 };
 
 export type NodeUpdate = {
-    content: string;
+    content?: (string | null);
     id?: (string | null);
     parent_id?: (string | null);
     position?: (number | string | null);
+    level?: (number | null);
 };
 
 export type PrivateUserCreate = {
@@ -198,6 +202,28 @@ export type LoginRecoverPasswordHtmlContentData = {
 };
 
 export type LoginRecoverPasswordHtmlContentResponse = (string);
+
+export type NodesCreateNodeData = {
+    nodelistId: string;
+    requestBody: NodeCreate;
+};
+
+export type NodesCreateNodeResponse = (Node);
+
+export type NodesPatchNodeData = {
+    id: string;
+    requestBody: NodeUpdate;
+};
+
+export type NodesPatchNodeResponse = (Node);
+
+export type NodesReorderNodeData = {
+    afterId?: (string | null);
+    beforeId?: (string | null);
+    id: string;
+};
+
+export type NodesReorderNodeResponse = (Node);
 
 export type PrivateCreateUserData = {
     requestBody: PrivateUserCreate;

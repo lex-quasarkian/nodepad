@@ -1,9 +1,12 @@
 import uuid
 from datetime import datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
+
+LtreeStr = Annotated[str, BeforeValidator(str)]
+
 
 if TYPE_CHECKING:
     pass
@@ -23,9 +26,12 @@ class Node(NodeBase):
     position: Decimal
     created_at: datetime
     updated_at: datetime | None = None
+    path: LtreeStr
+    level: int
 
 
 class NodeCreate(NodeBase):
+    id: uuid.UUID | None = Field(default=None)
     content: str = Field(max_length=255)
     position: Decimal | None = Field(default=None)
     parent_id: uuid.UUID | None = Field(default=None)
@@ -47,8 +53,8 @@ class NodeListCreate(NodeListBase):
 class NodeUpdate(NodeBase):
     id: uuid.UUID | None = Field(default=None)
     parent_id: uuid.UUID | None = Field(default=None)
-    content: str
     position: Decimal | None = Field(default=None)
+    level: int | None = Field(default=None)
 
 
 # Properties to receive on list update

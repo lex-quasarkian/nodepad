@@ -1,6 +1,6 @@
-import { Briefcase, Home, Users } from "lucide-react"
-import { useParams } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
+import { useParams } from "@tanstack/react-router"
+import { Briefcase, Home, Users } from "lucide-react"
 import { ListsService } from "@/client"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
@@ -28,11 +28,11 @@ export function AppSidebar() {
   })
 
   const baseItems: Item[] = []
-  
+
   if (listId && list) {
     baseItems.push({ icon: Home, title: list.title, path: `/lists/${listId}` })
   }
-  
+
   baseItems.push({ icon: Briefcase, title: "Lists", path: "/lists" })
 
   const items = currentUser?.is_superuser

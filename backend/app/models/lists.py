@@ -16,6 +16,7 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy_utils import Ltree, LtreeType
 
 from app.models import Base
 
@@ -41,7 +42,9 @@ class NodeList(Base):
     )
     owner: Mapped[User | None] = relationship(back_populates="lists")
     nodes: Mapped[list[Node]] = relationship(
-        back_populates="nodelist", cascade="all, delete-orphan", order_by="Node.position"
+        back_populates="nodelist",
+        cascade="all, delete-orphan",
+        order_by="cast(Node.path, String), Node.position",
     )
 
 
@@ -59,6 +62,8 @@ class Node(Base):
             "parent_id",
             "position",
         ),
+        Index("idx_node_path_gist", "path", postgresql_using="gist"),
+        Index("idx_node_level", "level"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid7)
@@ -75,6 +80,8 @@ class Node(Base):
         Numeric(30, 15),
         nullable=False,
     )
+    path: Mapped[Ltree] = mapped_column(LtreeType, nullable=False)
+    level: Mapped[int] = mapped_column(nullable=False, server_default="0")
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()

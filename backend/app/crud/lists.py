@@ -2,7 +2,9 @@ import uuid
 from decimal import Decimal
 
 from edwh_uuid7 import uuid7
+from sqlalchemy import text
 from sqlalchemy.orm import Session
+from sqlalchemy_utils import Ltree
 
 from app import models
 from app.crud.nodes import (
@@ -24,9 +26,12 @@ def create_list(
 
     if list_in.nodes:
         parent_positions = {}
+        created_nodes = {}
         for node_in in list_in.nodes:
             if node_in:
                 node_data = node_in.model_dump()
+                node_id = node_data.get("id") or uuid7()
+                node_data["id"] = node_id
 
                 # Ensure position is set if missing, incrementing by 1000 per parent
                 if node_data.get("position") is None:
@@ -36,9 +41,27 @@ def create_list(
                     node_data["position"] = new_pos
                     parent_positions[parent_id] = new_pos
 
+                # Calculate path and level
+                parent_id = node_data.get("parent_id")
+                if parent_id is None:
+                    node_data["path"] = Ltree(node_id.hex)
+                    node_data["level"] = 0
+                else:
+                    parent = created_nodes.get(parent_id)
+                    if not parent:
+                        parent = session.get(models.Node, parent_id)
+
+                    if parent:
+                        node_data["path"] = parent.path + node_id.hex
+                        node_data["level"] = parent.level + 1
+                    else:
+                        node_data["path"] = Ltree(node_id.hex)
+                        node_data["level"] = 0
+
                 db_node = models.Node(**node_data)
                 db_list.nodes.append(db_node)
                 session.add(db_node)
+                created_nodes[node_id] = db_node
 
     session.commit()
     session.refresh(db_list)
@@ -132,7 +155,38 @@ def update_list(
                 elif db_node:
                     db_node.content = node_in.content
                     if db_node.parent_id != parent_id:
+                        old_path = str(db_node.path)
                         db_node.parent_id = parent_id
+
+                        # Update path and level for the node itself
+                        if parent_id is None:
+                            db_node.path = Ltree(db_node.id.hex)
+                            db_node.level = 0
+                        else:
+                            parent = session.get(models.Node, parent_id)
+                            if parent:
+                                db_node.path = parent.path + db_node.id.hex
+                                db_node.level = parent.level + 1
+                            else:
+                                db_node.path = Ltree(db_node.id.hex)
+                                db_node.level = 0
+
+                        # Cascading update for descendants
+                        new_path = str(db_node.path)
+                        session.execute(
+                            text("""
+                            UPDATE node
+                            SET
+                                path = :new_path || subpath(path, nlevel(:old_path)),
+                                level = nlevel(:new_path || subpath(path, nlevel(:old_path))) - 1
+                            WHERE path <@ :old_path AND id != :node_id
+                        """),
+                            {
+                                "new_path": new_path,
+                                "old_path": old_path,
+                                "node_id": db_node.id,
+                            },
+                        )
                         needs_reposition = True
                     else:
                         if db_node.id not in lis_ids:
@@ -168,18 +222,31 @@ def update_list(
 
                     if is_new:
                         node_id = uuid7()
+
+                        # Calculate path and level for new node
+                        if parent_id is None:
+                            path = Ltree(node_id.hex)
+                            level = 0
+                        else:
+                            parent = session.get(models.Node, parent_id)
+                            if parent:
+                                path = parent.path + node_id.hex
+                                level = parent.level + 1
+                            else:
+                                path = Ltree(node_id.hex)
+                                level = 0
+
                         db_node = models.Node(
                             id=node_id,
                             nodelist_id=db_list.id,
                             parent_id=parent_id,
                             content=node_in.content,
                             position=pos,
+                            path=path,
+                            level=level,
                         )
                         db_list.nodes.append(db_node)
                         session.add(db_node)
-                        # We must add this new node to existing_nodes so it can be referenced
-                        # by subsequent right_id calculations if they were somehow in LIS
-                        # (though new nodes are never in lis_ids, but it's safe to have it)
                         existing_nodes[node_id] = db_node
                     else:
                         db_node.position = pos
