@@ -101,63 +101,7 @@ export const NewPasswordSchema = {
     title: 'NewPassword'
 } as const;
 
-export const Node_InputSchema = {
-    properties: {
-        content: {
-            type: 'string',
-            title: 'Content'
-        },
-        id: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Id'
-        },
-        nodelist_id: {
-            type: 'string',
-            format: 'uuid',
-            title: 'Nodelist Id'
-        },
-        parent_id: {
-            anyOf: [
-                {
-                    type: 'string',
-                    format: 'uuid'
-                },
-                {
-                    type: 'null'
-                }
-            ],
-            title: 'Parent Id'
-        },
-        position: {
-            anyOf: [
-                {
-                    type: 'number'
-                },
-                {
-                    type: 'string',
-                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
-                }
-            ],
-            title: 'Position'
-        },
-        created_at: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Created At'
-        },
-        updated_at: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Updated At'
-        }
-    },
-    type: 'object',
-    required: ['content', 'id', 'nodelist_id', 'position', 'created_at', 'updated_at'],
-    title: 'Node'
-} as const;
-
-export const Node_OutputSchema = {
+export const NodeSchema = {
     properties: {
         content: {
             type: 'string',
@@ -196,13 +140,20 @@ export const Node_OutputSchema = {
             title: 'Created At'
         },
         updated_at: {
-            type: 'string',
-            format: 'date-time',
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
             title: 'Updated At'
         }
     },
     type: 'object',
-    required: ['content', 'id', 'nodelist_id', 'position', 'created_at', 'updated_at'],
+    required: ['content', 'id', 'nodelist_id', 'position', 'created_at'],
     title: 'Node'
 } as const;
 
@@ -239,6 +190,18 @@ export const NodeCreateSchema = {
                 }
             ],
             title: 'Parent Id'
+        },
+        updated_at: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Updated At'
         }
     },
     type: 'object',
@@ -310,7 +273,7 @@ export const NodeListPublicSchema = {
             items: {
                 anyOf: [
                     {
-                        '$ref': '#/components/schemas/Node-Output'
+                        '$ref': '#/components/schemas/Node'
                     },
                     {
                         type: 'null'
@@ -341,6 +304,18 @@ export const NodeListPublicSchema = {
                 }
             ],
             title: 'Created At'
+        },
+        updated_at: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Updated At'
         }
     },
     type: 'object',
@@ -376,17 +351,24 @@ export const NodeListUpdateSchema = {
             title: 'Description'
         },
         nodes: {
-            items: {
-                anyOf: [
-                    {
-                        '$ref': '#/components/schemas/Node-Input'
+            anyOf: [
+                {
+                    items: {
+                        anyOf: [
+                            {
+                                '$ref': '#/components/schemas/NodeUpdate'
+                            },
+                            {
+                                type: 'null'
+                            }
+                        ]
                     },
-                    {
-                        type: 'null'
-                    }
-                ]
-            },
-            type: 'array',
+                    type: 'array'
+                },
+                {
+                    type: 'null'
+                }
+            ],
             title: 'Nodes'
         }
     },
@@ -411,6 +393,57 @@ export const NodeListsPublicSchema = {
     type: 'object',
     required: ['data', 'count'],
     title: 'NodeListsPublic'
+} as const;
+
+export const NodeUpdateSchema = {
+    properties: {
+        content: {
+            type: 'string',
+            title: 'Content'
+        },
+        id: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Id'
+        },
+        parent_id: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Parent Id'
+        },
+        position: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'string',
+                    pattern: '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Position'
+        }
+    },
+    type: 'object',
+    required: ['content'],
+    title: 'NodeUpdate'
 } as const;
 
 export const PrivateUserCreateSchema = {

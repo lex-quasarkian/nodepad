@@ -22,30 +22,21 @@ export type NewPassword = {
     new_password: string;
 };
 
-export type Node_Input = {
-    content: string;
-    id: string;
-    nodelist_id: string;
-    parent_id?: (string | null);
-    position: (number | string);
-    created_at: string;
-    updated_at: string;
-};
-
-export type Node_Output = {
+export type Node = {
     content: string;
     id: string;
     nodelist_id: string;
     parent_id?: (string | null);
     position: string;
     created_at: string;
-    updated_at: string;
+    updated_at?: (string | null);
 };
 
 export type NodeCreate = {
     content: string;
     position?: (number | string | null);
     parent_id?: (string | null);
+    updated_at?: (string | null);
 };
 
 export type NodeListCreate = {
@@ -57,10 +48,11 @@ export type NodeListCreate = {
 export type NodeListPublic = {
     title: string;
     description?: (string | null);
-    nodes?: Array<(Node_Output | null)>;
+    nodes?: Array<(Node | null)>;
     id: string;
     owner_id: string;
     created_at?: (string | null);
+    updated_at?: (string | null);
 };
 
 export type NodeListsPublic = {
@@ -71,7 +63,14 @@ export type NodeListsPublic = {
 export type NodeListUpdate = {
     title?: (string | null);
     description?: (string | null);
-    nodes?: Array<(Node_Input | null)>;
+    nodes?: (Array<(NodeUpdate | null)> | null);
+};
+
+export type NodeUpdate = {
+    content: string;
+    id?: (string | null);
+    parent_id?: (string | null);
+    position?: (number | string | null);
 };
 
 export type PrivateUserCreate = {

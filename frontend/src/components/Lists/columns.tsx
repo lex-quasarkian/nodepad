@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router"
 import type { ColumnDef } from "@tanstack/react-table"
 
 import type { NodeListPublic } from "@/client"
@@ -9,7 +10,14 @@ export const columns: ColumnDef<NodeListPublic>[] = [
     accessorKey: "title",
     header: "Title",
     cell: ({ row }) => (
-      <span className="font-medium">{row.original.title}</span>
+      <Link
+        to="/lists/$listId"
+        params={{ listId: row.original.id }}
+        className="font-medium text-primary hover:underline truncate block"
+        title={row.original.title}
+      >
+        {row.original.title}
+      </Link>
     ),
   },
   {
