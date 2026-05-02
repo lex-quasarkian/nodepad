@@ -7,10 +7,10 @@ from app.core.security import get_password_hash
 from app.models import User
 from app.schemas import PrivateUserCreate, UserPublic
 
-router = APIRouter(tags=["private"], prefix="/private")
+private_router = APIRouter(tags=["private"], prefix="/private")
 
 
-@router.post("/users/", response_model=UserPublic)
+@private_router.post("/users/", response_model=UserPublic)
 def create_user(user_in: PrivateUserCreate, session: SessionDep) -> Any:
     """
     Create a new user.

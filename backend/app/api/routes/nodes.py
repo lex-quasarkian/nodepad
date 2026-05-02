@@ -3,16 +3,16 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
-from app import crud, models
+from app import models, services
 from app.api.deps import CurrentUser, SessionDep
 from app.models import Node
 from app.schemas.lists import Node as NodePublic
 from app.schemas.lists import NodeCreate, NodeUpdate
 
-router = APIRouter(prefix="/nodes", tags=["nodes"])
+nodes_router = APIRouter(prefix="/nodes", tags=["nodes"])
 
 
-@router.post("/", response_model=NodePublic)
+@nodes_router.post("/", response_model=NodePublic)
 def create_node(
     *,
     session: SessionDep,
@@ -30,12 +30,12 @@ def create_node(
     if not current_user.is_superuser and (db_list.owner_id != current_user.id):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    return crud.nodes.create_node(
+    return services.nodes.create_node(
         session=session, node_in=node_in, nodelist_id=nodelist_id
     )
 
 
-@router.patch("/{id}", response_model=NodePublic)
+@nodes_router.patch("/{id}", response_model=NodePublic)
 def patch_node(
     *,
     session: SessionDep,
@@ -54,12 +54,14 @@ def patch_node(
     if not current_user.is_superuser and (db_node.nodelist.owner_id != current_user.id):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    db_node = crud.nodes.update_node(session=session, db_node=db_node, node_in=node_in)
+    db_node = services.nodes.update_node(
+        session=session, db_node=db_node, node_in=node_in
+    )
 
     return db_node
 
 
-@router.post("/{id}/reorder", response_model=NodePublic)
+@nodes_router.post("/{id}/reorder", response_model=NodePublic)
 def reorder_node(
     *,
     session: SessionDep,
@@ -78,6 +80,6 @@ def reorder_node(
     if not current_user.is_superuser and (db_node.nodelist.owner_id != current_user.id):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    return crud.nodes.reorder_node(
+    return services.nodes.reorder_node(
         session=session, db_node=db_node, before_id=before_id, after_id=after_id
     )
