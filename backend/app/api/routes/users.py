@@ -2,7 +2,7 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import desc, func, select
+from sqlalchemy import delete, desc, func, select
 
 from app import crud
 from app.api.deps import (
@@ -12,7 +12,7 @@ from app.api.deps import (
 )
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
-from app.models import User
+from app.models import NodeList, User
 from app.schemas import (
     Message,
     UpdatePassword,
@@ -118,6 +118,7 @@ def update_password_me(
     current_user.hashed_password = hashed_password
     session.add(current_user)
     session.commit()
+
     return Message(message="Password updated successfully")
 
 
@@ -127,6 +128,7 @@ def read_user_me(current_user: CurrentUser) -> Any:
     Get current user.
     """
     user = current_user
+
     return user
 
 
@@ -141,6 +143,7 @@ def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
         )
     session.delete(current_user)
     session.commit()
+
     return Message(message="User deleted successfully")
 
 
@@ -157,6 +160,7 @@ def register_user(session: SessionDep, user_in: UserRegister) -> Any:
         )
     user_create = UserCreate(**user_in.model_dump())
     user = crud.users.create_user(session=session, user_create=user_create)
+
     return user
 
 
@@ -177,6 +181,7 @@ def read_user_by_id(
         )
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
+
     return user
 
 
@@ -202,13 +207,16 @@ def update_user(
             detail="The user with this id does not exist in the system",
         )
     if user_in.email:
-        existing_user = crud.users.get_user_by_email(session=session, email=user_in.email)
+        existing_user = crud.users.get_user_by_email(
+            session=session, email=user_in.email
+        )
         if existing_user and existing_user.id != user_id:
             raise HTTPException(
                 status_code=409, detail="User with this email already exists"
             )
 
     db_user = crud.users.update_user(session=session, db_user=db_user, user_in=user_in)
+
     return db_user
 
 
@@ -226,8 +234,10 @@ def delete_user(
         raise HTTPException(
             status_code=403, detail="Super users are not allowed to delete themselves"
         )
-    # statement = delete(Nodelist).where(col(NodeList.owner_id) == user_id)  #FIXME: delete user lists and nodes before removing the user
-    # session.execute(statement)
+
+    # FIXME: delete user lists and nodes before removing the user
+    statement = delete(NodeList).where(NodeList.owner_id == user_id)
+    session.execute(statement)
 
     session.delete(user)
     session.commit()

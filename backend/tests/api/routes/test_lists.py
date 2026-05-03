@@ -50,7 +50,7 @@ def test_create_list_with_nodes(
 
 
 def test_update_list_with_nodes_fractional_positioning(
-    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+    client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
     # 1. Create a list with 2 nodes
     create_data = {

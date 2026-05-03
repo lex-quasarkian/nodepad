@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app import services
+from app import crud
 from app.models import NodeList
 from app.schemas import NodeListCreate
 from tests.utils.user import create_random_user
@@ -15,4 +15,4 @@ def create_random_list(db: Session) -> NodeList:
     description = random_lower_string()
     list_in = NodeListCreate(title=title, description=description)
 
-    return services.lists.create_list(session=db, list_in=list_in, owner_id=owner_id)
+    return crud.lists.create_list(session=db, list_in=list_in, owner_id=owner_id)

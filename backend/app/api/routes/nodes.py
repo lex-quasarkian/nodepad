@@ -3,7 +3,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
-from app import models, services
+from app import crud, models
 from app.api.deps import CurrentUser, SessionDep
 from app.models import Node
 from app.schemas.lists import Node as NodePublic
@@ -30,7 +30,7 @@ def create_node(
     if not current_user.is_superuser and (db_list.owner_id != current_user.id):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    return services.nodes.create_node(
+    return crud.nodes.create_node(
         session=session, node_in=node_in, nodelist_id=nodelist_id
     )
 
@@ -54,9 +54,7 @@ def patch_node(
     if not current_user.is_superuser and (db_node.nodelist.owner_id != current_user.id):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    db_node = services.nodes.update_node(
-        session=session, db_node=db_node, node_in=node_in
-    )
+    db_node = crud.nodes.update_node(session=session, db_node=db_node, node_in=node_in)
 
     return db_node
 
@@ -80,6 +78,6 @@ def reorder_node(
     if not current_user.is_superuser and (db_node.nodelist.owner_id != current_user.id):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    return services.nodes.reorder_node(
+    return crud.nodes.reorder_node(
         session=session, db_node=db_node, before_id=before_id, after_id=after_id
     )

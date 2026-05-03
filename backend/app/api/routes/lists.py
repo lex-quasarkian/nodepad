@@ -4,7 +4,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import func, select
 
-from app import services
+from app import crud
 from app.api.deps import CurrentUser, SessionDep
 from app.models import NodeList
 from app.schemas import (
@@ -78,7 +78,7 @@ def create_list(
     Create new list.
     """
 
-    list_obj = services.lists.create_list(
+    list_obj = crud.lists.create_list(
         session=session, list_in=list_in, owner_id=current_user.id
     )
     return list_obj
@@ -101,9 +101,7 @@ def update_list(
     if not current_user.is_superuser and (list_obj.owner_id != current_user.id):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    list_obj = services.lists.update_list(
-        session=session, db_list=list_obj, list_in=list_in
-    )
+    list_obj = crud.lists.update_list(session=session, db_list=list_obj, list_in=list_in)
 
     return list_obj
 
