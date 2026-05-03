@@ -3,7 +3,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
-from app import crud, models
+from app import crud, models, schemas
 from app.api.deps import CurrentUser, SessionDep
 from app.models import Node
 from app.schemas.lists import Node as NodePublic
@@ -81,3 +81,25 @@ def reorder_node(
     return crud.nodes.reorder_node(
         session=session, db_node=db_node, before_id=before_id, after_id=after_id
     )
+
+
+@nodes_router.delete("/{id}", response_model=schemas.Message)
+def delete_node(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    id: uuid.UUID,
+) -> Any:
+    """
+    Delete a node.
+    """
+    db_node = session.get(Node, id)
+    if not db_node:
+        raise HTTPException(status_code=404, detail="Node not found")
+
+    if not current_user.is_superuser and (db_node.nodelist.owner_id != current_user.id):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    crud.nodes.delete_node(session=session, db_node=db_node)
+
+    return schemas.Message(message="Node deleted successfully")

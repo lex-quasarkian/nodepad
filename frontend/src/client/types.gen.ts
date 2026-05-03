@@ -225,6 +225,12 @@ export type NodesReorderNodeData = {
 
 export type NodesReorderNodeResponse = (Node);
 
+export type NodesDeleteNodeData = {
+    id: string;
+};
+
+export type NodesDeleteNodeResponse = (Message);
+
 export type PrivateCreateUserData = {
     requestBody: PrivateUserCreate;
 };

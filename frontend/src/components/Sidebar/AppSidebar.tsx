@@ -10,9 +10,11 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarSeparator,
 } from "@/components/ui/sidebar"
 import useAuth from "@/hooks/useAuth"
 import { type Item, Main } from "./Main"
+import { Shortcuts } from "./Shortcuts"
 import { User } from "./User"
 
 export function AppSidebar() {
@@ -46,6 +48,12 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <Main items={items} />
+        {listId && (
+          <>
+            <SidebarSeparator />
+            <Shortcuts />
+          </>
+        )}
       </SidebarContent>
       <SidebarFooter>
         <SidebarAppearance />

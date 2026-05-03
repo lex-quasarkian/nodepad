@@ -158,7 +158,7 @@ def create_node(
     parent_id = node_in.parent_id
 
     # Calculate position
-    pos = get_position_end(session, nodelist_id, parent_id)
+    pos = node_in.position if node_in.position is not None else get_position_end(session, nodelist_id, parent_id)
 
     # Fetch parent for path/level calculation
     parent = session.get(models.Node, parent_id) if parent_id else None
@@ -256,3 +256,10 @@ def reorder_node(
     session.commit()
     session.refresh(db_node)
     return db_node
+
+
+def delete_node(session: Session, *, db_node: models.Node):
+    nodelist_id = db_node.nodelist_id
+    session.delete(db_node)
+    update_parent_list_timestamp(session, nodelist_id)
+    session.commit()

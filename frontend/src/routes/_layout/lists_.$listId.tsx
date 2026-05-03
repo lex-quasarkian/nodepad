@@ -133,7 +133,12 @@ function ListDetailContent({ listId }: { listId: string }) {
 	});
 
 	const createMutation = useMutation({
-		mutationFn: (data: { content: string; parent_id?: string }) =>
+		mutationFn: (data: {
+			content: string;
+			parent_id?: string;
+			id?: string;
+			position?: string;
+		}) =>
 			NodesService.createNode({
 				nodelistId: listId,
 				requestBody: data,
@@ -152,6 +157,13 @@ function ListDetailContent({ listId }: { listId: string }) {
 				beforeId: data.before_id,
 				afterId: data.after_id,
 			}),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["lists", listId] });
+		},
+	});
+
+	const deleteMutation = useMutation({
+		mutationFn: (id: string) => NodesService.deleteNode({ id }),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["lists", listId] });
 		},
@@ -206,6 +218,47 @@ function ListDetailContent({ listId }: { listId: string }) {
 		return result;
 	}, [sortedNodes, collapsedIds]);
 
+	const [lastDeletedNode, setLastDeletedNode] = useState<Node | null>(null);
+
+	const handleDeleteNode = useCallback(
+		(id: string) => {
+			const node = sortedNodes.find((n) => n.id === id);
+			if (node) {
+				setLastDeletedNode(node);
+				deleteMutation.mutate(id);
+				setEditingId(null);
+			}
+		},
+		[sortedNodes, deleteMutation],
+	);
+
+	const handleUndoDelete = useCallback(() => {
+		if (lastDeletedNode) {
+			createMutation.mutate({
+				content: lastDeletedNode.content,
+				parent_id: lastDeletedNode.parent_id || undefined,
+				// We pass the old position to restore it exactly
+				position: lastDeletedNode.position,
+				// We also try to restore the ID if the backend supports it
+				id: lastDeletedNode.id,
+			});
+			setLastDeletedNode(null);
+		}
+	}, [lastDeletedNode, createMutation]);
+
+	useEffect(() => {
+		const handleGlobalKeyDown = (e: KeyboardEvent) => {
+			if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+				if (!editingId && !addingToId) {
+					e.preventDefault();
+					handleUndoDelete();
+				}
+			}
+		};
+		window.addEventListener("keydown", handleGlobalKeyDown);
+		return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+	}, [handleUndoDelete, editingId, addingToId]);
+
 	const handleStartEdit = useCallback((node: Node) => {
 		setEditingId(node.id);
 		setEditingContent(node.content);
@@ -251,34 +304,50 @@ function ListDetailContent({ listId }: { listId: string }) {
 
 	const handleEditKeyDown = useCallback(
 		(e: React.KeyboardEvent) => {
-			if (e.key === "Tab") {
-				e.preventDefault();
-				e.stopPropagation();
-				if (e.shiftKey) handleOutdent(editingId!);
-				else handleIndent(editingId!);
-			} else if (e.key === "ArrowUp") {
-				e.preventDefault();
-				const idx = visibleNodes.findIndex((n) => n.id === editingId);
-				if (idx > 0) {
-					handleSaveEdit();
-					handleStartEdit(visibleNodes[idx - 1]);
-				}
-			} else if (e.key === "ArrowDown") {
-				e.preventDefault();
-				const idx = visibleNodes.findIndex((n) => n.id === editingId);
-				if (idx < visibleNodes.length - 1) {
-					handleSaveEdit();
-					handleStartEdit(visibleNodes[idx + 1]);
-				}
-			} else if (e.key === "Enter") {
-				if (e.shiftKey) {
-					handleSaveEdit();
-					setAddingToId(editingId);
-				} else {
-					editInputRef.current?.blur();
-				}
-			} else if (e.key === "Escape") {
-				setEditingId(null);
+			const actions: Record<string, () => void> = {
+				Tab: () => {
+					e.preventDefault();
+					e.stopPropagation();
+					if (e.shiftKey) handleOutdent(editingId!);
+					else handleIndent(editingId!);
+				},
+				ArrowUp: () => {
+					e.preventDefault();
+					const idx = visibleNodes.findIndex((n) => n.id === editingId);
+					if (idx > 0) {
+						handleSaveEdit();
+						handleStartEdit(visibleNodes[idx - 1]);
+					}
+				},
+				ArrowDown: () => {
+					e.preventDefault();
+					const idx = visibleNodes.findIndex((n) => n.id === editingId);
+					if (idx < visibleNodes.length - 1) {
+						handleSaveEdit();
+						handleStartEdit(visibleNodes[idx + 1]);
+					}
+				},
+				Enter: () => {
+					if (e.shiftKey) {
+						handleSaveEdit();
+						setAddingToId(editingId);
+					} else {
+						editInputRef.current?.blur();
+					}
+				},
+				Backspace: () => {
+					if (editingContent === "") {
+						e.preventDefault();
+						handleDeleteNode(editingId!);
+					}
+				},
+				Escape: () => {
+					setEditingId(null);
+				},
+			};
+
+			if (actions[e.key]) {
+				actions[e.key]();
 			}
 		},
 		[
@@ -288,6 +357,8 @@ function ListDetailContent({ listId }: { listId: string }) {
 			visibleNodes,
 			handleSaveEdit,
 			handleStartEdit,
+			editingContent,
+			handleDeleteNode,
 		],
 	);
 
