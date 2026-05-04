@@ -2,7 +2,7 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import col, delete, func, select
+from sqlalchemy import desc, func, select
 
 from app import crud
 from app.api.deps import (
@@ -12,11 +12,10 @@ from app.api.deps import (
 )
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
-from app.models import (
-    List,
+from app.models import User
+from app.schemas import (
     Message,
     UpdatePassword,
-    User,
     UserCreate,
     UserPublic,
     UserRegister,
@@ -40,12 +39,10 @@ def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
     """
 
     count_statement = select(func.count()).select_from(User)
-    count = session.exec(count_statement).one()
+    count = session.execute(count_statement).scalar_one()
 
-    statement = (
-        select(User).order_by(col(User.created_at).desc()).offset(skip).limit(limit)
-    )
-    users = session.exec(statement).all()
+    statement = select(User).order_by(desc(User.created_at)).offset(skip).limit(limit)
+    users = session.execute(statement).scalars().all()
 
     return UsersPublic(data=users, count=count)
 
@@ -92,10 +89,13 @@ def update_user_me(
                 status_code=409, detail="User with this email already exists"
             )
     user_data = user_in.model_dump(exclude_unset=True)
-    current_user.sqlmodel_update(user_data)
+    for key, value in user_data.items():
+        setattr(current_user, key, value)
+
     session.add(current_user)
     session.commit()
     session.refresh(current_user)
+
     return current_user
 
 
@@ -125,7 +125,8 @@ def read_user_me(current_user: CurrentUser) -> Any:
     """
     Get current user.
     """
-    return current_user
+    user = current_user
+    return user
 
 
 @router.delete("/me", response_model=Message)
@@ -153,7 +154,7 @@ def register_user(session: SessionDep, user_in: UserRegister) -> Any:
             status_code=400,
             detail="The user with this email already exists in the system",
         )
-    user_create = UserCreate.model_validate(user_in)
+    user_create = UserCreate(**user_in.model_dump())
     user = crud.create_user(session=session, user_create=user_create)
     return user
 
@@ -224,8 +225,10 @@ def delete_user(
         raise HTTPException(
             status_code=403, detail="Super users are not allowed to delete themselves"
         )
-    statement = delete(List).where(col(List.owner_id) == user_id)
-    session.exec(statement)
+    # statement = delete(Nodelist).where(col(NodeList.owner_id) == user_id)  #FIXME: delete user lists and nodes before removing the user
+    # session.execute(statement)
+
     session.delete(user)
     session.commit()
+
     return Message(message="User deleted successfully")

@@ -1,11 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { Pencil } from "lucide-react"
+import { Plus } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { type ItemPublic, ItemsService } from "@/client"
+import { ListsService, type NodeListCreate } from "@/client"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -15,8 +15,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog"
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import {
   Form,
   FormControl,
@@ -37,12 +37,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>
 
-interface EditItemProps {
-  item: ItemPublic
-  onSuccess: () => void
-}
-
-const EditItem = ({ item, onSuccess }: EditItemProps) => {
+const AddList = () => {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { showSuccessToast, showErrorToast } = useCustomToast()
@@ -52,22 +47,22 @@ const EditItem = ({ item, onSuccess }: EditItemProps) => {
     mode: "onBlur",
     criteriaMode: "all",
     defaultValues: {
-      title: item.title,
-      description: item.description ?? undefined,
+      title: "",
+      description: "",
     },
   })
 
   const mutation = useMutation({
-    mutationFn: (data: FormData) =>
-      ItemsService.updateItem({ id: item.id, requestBody: data }),
+    mutationFn: (data: NodeListCreate) =>
+      ListsService.createList({ requestBody: data }),
     onSuccess: () => {
-      showSuccessToast("Item updated successfully")
+      showSuccessToast("List created successfully")
+      form.reset()
       setIsOpen(false)
-      onSuccess()
     },
     onError: handleError.bind(showErrorToast),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["items"] })
+      queryClient.invalidateQueries({ queryKey: ["lists"] })
     },
   })
 
@@ -77,22 +72,21 @@ const EditItem = ({ item, onSuccess }: EditItemProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuItem
-        onSelect={(e) => e.preventDefault()}
-        onClick={() => setIsOpen(true)}
-      >
-        <Pencil />
-        Edit Item
-      </DropdownMenuItem>
+      <DialogTrigger asChild>
+        <Button className="my-4">
+          <Plus className="mr-2" />
+          Add List
+        </Button>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add List</DialogTitle>
+          <DialogDescription>
+            Fill in the details to add a new list.
+          </DialogDescription>
+        </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <DialogHeader>
-              <DialogTitle>Edit Item</DialogTitle>
-              <DialogDescription>
-                Update the item details below.
-              </DialogDescription>
-            </DialogHeader>
             <div className="grid gap-4 py-4">
               <FormField
                 control={form.control}
@@ -103,7 +97,12 @@ const EditItem = ({ item, onSuccess }: EditItemProps) => {
                       Title <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Title" type="text" {...field} />
+                      <Input
+                        placeholder="Title"
+                        type="text"
+                        {...field}
+                        required
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -142,4 +141,4 @@ const EditItem = ({ item, onSuccess }: EditItemProps) => {
   )
 }
 
-export default EditItem
+export default AddList

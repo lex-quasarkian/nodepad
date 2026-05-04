@@ -13,29 +13,6 @@ export type HTTPValidationError = {
     detail?: Array<ValidationError>;
 };
 
-export type ItemCreate = {
-    title: string;
-    description?: (string | null);
-};
-
-export type ItemPublic = {
-    title: string;
-    description?: (string | null);
-    id: string;
-    owner_id: string;
-    created_at?: (string | null);
-};
-
-export type ItemsPublic = {
-    data: Array<ItemPublic>;
-    count: number;
-};
-
-export type ItemUpdate = {
-    title?: (string | null);
-    description?: (string | null);
-};
-
 export type Message = {
     message: string;
 };
@@ -43,6 +20,57 @@ export type Message = {
 export type NewPassword = {
     token: string;
     new_password: string;
+};
+
+export type Node = {
+    content: string;
+    id: string;
+    nodelist_id: string;
+    parent_id?: (string | null);
+    position: string;
+    created_at: string;
+    updated_at?: (string | null);
+};
+
+export type NodeCreate = {
+    content: string;
+    position?: (number | string | null);
+    parent_id?: (string | null);
+    updated_at?: (string | null);
+};
+
+export type NodeListCreate = {
+    title: string;
+    description?: (string | null);
+    nodes?: Array<(NodeCreate | null)>;
+};
+
+export type NodeListPublic = {
+    title: string;
+    description?: (string | null);
+    nodes?: Array<(Node | null)>;
+    id: string;
+    owner_id: string;
+    created_at?: (string | null);
+    updated_at?: (string | null);
+};
+
+export type NodeListsPublic = {
+    data: Array<NodeListPublic>;
+    count: number;
+};
+
+export type NodeListUpdate = {
+    title?: (string | null);
+    description?: (string | null);
+    nodes?: (Array<(NodeUpdate | null)> | null);
+};
+
+export type NodeUpdate = {
+    content: string;
+    id?: (string | null);
+    parent_id?: (string | null);
+    position?: (number | string | null);
 };
 
 export type PrivateUserCreate = {
@@ -113,37 +141,37 @@ export type ValidationError = {
     };
 };
 
-export type ItemsReadItemsData = {
+export type ListsReadListsData = {
     limit?: number;
     skip?: number;
 };
 
-export type ItemsReadItemsResponse = (ItemsPublic);
+export type ListsReadListsResponse = (NodeListsPublic);
 
-export type ItemsCreateItemData = {
-    requestBody: ItemCreate;
+export type ListsCreateListData = {
+    requestBody: NodeListCreate;
 };
 
-export type ItemsCreateItemResponse = (ItemPublic);
+export type ListsCreateListResponse = (NodeListPublic);
 
-export type ItemsReadItemData = {
+export type ListsReadListData = {
     id: string;
 };
 
-export type ItemsReadItemResponse = (ItemPublic);
+export type ListsReadListResponse = (NodeListPublic);
 
-export type ItemsUpdateItemData = {
+export type ListsUpdateListData = {
     id: string;
-    requestBody: ItemUpdate;
+    requestBody: NodeListUpdate;
 };
 
-export type ItemsUpdateItemResponse = (ItemPublic);
+export type ListsUpdateListResponse = (NodeListPublic);
 
-export type ItemsDeleteItemData = {
+export type ListsDeleteListData = {
     id: string;
 };
 
-export type ItemsDeleteItemResponse = (Message);
+export type ListsDeleteListResponse = (Message);
 
 export type LoginLoginAccessTokenData = {
     formData: Body_login_login_access_token;

@@ -1,21 +1,21 @@
 import { EllipsisVertical } from "lucide-react"
 import { useState } from "react"
 
-import type { ItemPublic } from "@/client"
+import type { NodeListPublic } from "@/client"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import DeleteItem from "../Items/DeleteItem"
-import EditItem from "../Items/EditItem"
+import DeleteList from "./DeleteList"
+import EditList from "./EditList"
 
-interface ItemActionsMenuProps {
-  item: ItemPublic
+interface ListActionsMenuProps {
+  list: NodeListPublic
 }
 
-export const ItemActionsMenu = ({ item }: ItemActionsMenuProps) => {
+export const ListActionsMenu = ({ list }: ListActionsMenuProps) => {
   const [open, setOpen] = useState(false)
 
   return (
@@ -26,8 +26,8 @@ export const ItemActionsMenu = ({ item }: ItemActionsMenuProps) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <EditItem item={item} onSuccess={() => setOpen(false)} />
-        <DeleteItem id={item.id} onSuccess={() => setOpen(false)} />
+        <EditList list={list} onSuccess={() => setOpen(false)} />
+        <DeleteList id={list.id} onSuccess={() => setOpen(false)} />
       </DropdownMenuContent>
     </DropdownMenu>
   )

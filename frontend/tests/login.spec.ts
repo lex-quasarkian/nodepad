@@ -53,6 +53,15 @@ test("Log in with valid email and password ", async ({ page }) => {
 test("Log in with invalid email", async ({ page }) => {
   await page.goto("/login")
 
+  await fillForm(page, "invalidemail@example.com", firstSuperuserPassword)
+  await page.getByRole("button", { name: "Log In" }).click()
+
+  await expect(page.getByText("Incorrect email or password")).toBeVisible()
+})
+
+test("Log in with invalid email format, no @ character", async ({ page }) => {
+  await page.goto("/login")
+
   await fillForm(page, "invalidemail", firstSuperuserPassword)
   await page.getByRole("button", { name: "Log In" }).click()
 
@@ -67,6 +76,14 @@ test("Log in with invalid password", async ({ page }) => {
   await page.getByRole("button", { name: "Log In" }).click()
 
   await expect(page.getByText("Incorrect email or password")).toBeVisible()
+})
+
+test("Log in with empty password", async ({ page }) => {
+  await page.goto("/login")
+  await fillForm(page, firstSuperuser, "")
+  await page.getByRole("button", { name: "Log In" }).click()
+
+  await expect(page.getByText("Password is required")).toBeVisible()
 })
 
 test("Successful log out", async ({ page }) => {

@@ -3,7 +3,7 @@ import { Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 
-import { ItemsService } from "@/client"
+import { ListsService } from "@/client"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -19,25 +19,25 @@ import { LoadingButton } from "@/components/ui/loading-button"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 
-interface DeleteItemProps {
+interface DeleteListProps {
   id: string
   onSuccess: () => void
 }
 
-const DeleteItem = ({ id, onSuccess }: DeleteItemProps) => {
+const DeleteList = ({ id, onSuccess }: DeleteListProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { showSuccessToast, showErrorToast } = useCustomToast()
   const { handleSubmit } = useForm()
 
-  const deleteItem = async (id: string) => {
-    await ItemsService.deleteItem({ id: id })
+  const deleteList = async (id: string) => {
+    await ListsService.deleteList({ id: id })
   }
 
   const mutation = useMutation({
-    mutationFn: deleteItem,
+    mutationFn: deleteList,
     onSuccess: () => {
-      showSuccessToast("The item was deleted successfully")
+      showSuccessToast("The list was deleted successfully")
       setIsOpen(false)
       onSuccess()
     },
@@ -59,14 +59,14 @@ const DeleteItem = ({ id, onSuccess }: DeleteItemProps) => {
         onClick={() => setIsOpen(true)}
       >
         <Trash2 />
-        Delete Item
+        Delete List
       </DropdownMenuItem>
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>Delete Item</DialogTitle>
+            <DialogTitle>Delete List</DialogTitle>
             <DialogDescription>
-              This item will be permanently deleted. Are you sure? You will not
+              This list will be permanently deleted. Are you sure? You will not
               be able to undo this action.
             </DialogDescription>
           </DialogHeader>
@@ -91,4 +91,4 @@ const DeleteItem = ({ id, onSuccess }: DeleteItemProps) => {
   )
 }
 
-export default DeleteItem
+export default DeleteList

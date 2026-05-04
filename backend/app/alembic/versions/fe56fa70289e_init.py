@@ -33,13 +33,14 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("hashed_password", sa.String(), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False,  server_default=sa.func.now()),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True, onupdate=sa.func.now()),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_user_email"), "user", ["email"], unique=True)
 
     op.create_table(
-        "list",
+        "nodelist",
         sa.Column("description", sa.String(length=255), nullable=True),
         sa.Column(
             "id",
@@ -48,14 +49,70 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("title", sa.String(length=255), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("owner_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.ForeignKeyConstraint(["owner_id"], ["user.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_table(
+        "node",
+        sa.Column(
+            "id",
+            postgresql.UUID(as_uuid=True),
+            primary_key=True,
+            nullable=False,
+        ),
+        sa.Column(
+            "nodelist_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("nodelist.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
+        sa.Column(
+            "parent_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("node.id", ondelete="CASCADE"),
+            nullable=True,
+        ),
+        sa.Column(
+            "content",
+            sa.Text(),
+            nullable=False,
+        ),
+        sa.Column(
+            "position",
+            sa.Numeric(30, 15),
+            nullable=False,
+        ),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.now(),
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            nullable=True,
+            onupdate=sa.func.now(),
+        ),
+        sa.CheckConstraint(
+            "parent_id IS NULL OR parent_id <> id",
+            name="ck_node_parent_not_self",
+        ),
+    )
+
+    op.create_index(
+        "idx_node_list_parent_pos",
+        "node",
+        ["nodelist_id", "parent_id", "position"],
+    )
 
 
 def downgrade() -> None:
-    op.drop_table("list")
+    op.drop_table("node")
+    op.drop_index("idx_node_list_parent_pos", table_name="node")
+    op.drop_table("nodelist")
     op.drop_index(op.f("ix_user_email"), table_name="user")
     op.drop_table("user")
