@@ -15,4 +15,4 @@ def create_random_list(db: Session) -> NodeList:
     description = random_lower_string()
     list_in = NodeListCreate(title=title, description=description)
 
-    return crud.create_list(session=db, list_in=list_in, owner_id=owner_id)
+    return crud.lists.create_list(session=db, list_in=list_in, owner_id=owner_id)

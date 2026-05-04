@@ -150,10 +150,18 @@ export const NodeSchema = {
                 }
             ],
             title: 'Updated At'
+        },
+        path: {
+            type: 'string',
+            title: 'Path'
+        },
+        level: {
+            type: 'integer',
+            title: 'Level'
         }
     },
     type: 'object',
-    required: ['content', 'id', 'nodelist_id', 'position', 'created_at'],
+    required: ['content', 'id', 'nodelist_id', 'position', 'created_at', 'path', 'level'],
     title: 'Node'
 } as const;
 
@@ -163,6 +171,18 @@ export const NodeCreateSchema = {
             type: 'string',
             maxLength: 255,
             title: 'Content'
+        },
+        id: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Id'
         },
         position: {
             anyOf: [
@@ -398,7 +418,15 @@ export const NodeListsPublicSchema = {
 export const NodeUpdateSchema = {
     properties: {
         content: {
-            type: 'string',
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
             title: 'Content'
         },
         id: {
@@ -439,10 +467,20 @@ export const NodeUpdateSchema = {
                 }
             ],
             title: 'Position'
+        },
+        level: {
+            anyOf: [
+                {
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Level'
         }
     },
     type: 'object',
-    required: ['content'],
     title: 'NodeUpdate'
 } as const;
 

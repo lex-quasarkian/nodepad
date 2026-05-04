@@ -66,3 +66,7 @@ You:
 - print debugging
 - blocking IO in async
 - implicit commits
+
+## Code structure
+
+- services/ contains only business logic (no Session or DB calls), while crud handles all persistence and DB-specific operations.

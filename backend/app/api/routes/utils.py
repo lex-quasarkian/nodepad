@@ -5,10 +5,10 @@ from app.api.deps import get_current_active_superuser
 from app.schemas import Message
 from app.utils import generate_test_email, send_email
 
-router = APIRouter(prefix="/utils", tags=["utils"])
+utils_router = APIRouter(prefix="/utils", tags=["utils"])
 
 
-@router.post(
+@utils_router.post(
     "/test-email/",
     dependencies=[Depends(get_current_active_superuser)],
     status_code=201,
@@ -26,6 +26,7 @@ def test_email(email_to: EmailStr) -> Message:
     return Message(message="Test email sent")
 
 
-@router.get("/health-check/")
+@utils_router.get("/health-check/")
 async def health_check() -> bool:
+
     return True

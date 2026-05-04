@@ -1,44 +1,67 @@
 import uuid
+from collections import defaultdict
 from decimal import Decimal
+from itertools import count
 
-from edwh_uuid7 import uuid7
 from sqlalchemy.orm import Session
 
-from app import models
-from app.crud.nodes import (
-    get_position_between,
-    get_position_end,
-    get_position_start,
-    reindex_nodes,
-)
-from app.schemas.lists import NodeListCreate, NodeListUpdate, NodeUpdate
+from app import models, services
+from app.crud import nodes as crud_nodes
+from app.schemas.lists import NodeListCreate, NodeListUpdate
+
+
+def get_list(session: Session, *, id: uuid.UUID) -> models.NodeList | None:
+    return session.get(models.NodeList, id)
 
 
 def create_list(
     *, session: Session, list_in: NodeListCreate, owner_id: uuid.UUID
 ) -> models.NodeList:
+    from edwh_uuid7 import uuid7
+
     db_list = models.NodeList(
         **list_in.model_dump(exclude_unset=True, exclude={"nodes"}), owner_id=owner_id
     )
     session.add(db_list)
 
     if list_in.nodes:
-        parent_positions = {}
+        # Use a counter that starts at 1000 and increments by 1000 for each parent
+        parent_counters = defaultdict(lambda: count(1000, 1000))
+        created_nodes = {}
         for node_in in list_in.nodes:
             if node_in:
                 node_data = node_in.model_dump()
+                node_id = node_data.get("id") or uuid7()
+                node_data["id"] = node_id
 
-                # Ensure position is set if missing, incrementing by 1000 per parent
+                # Ensure position is set if missing
                 if node_data.get("position") is None:
-                    parent_id = node_data.get("parent_id")
-                    current_pos = parent_positions.get(parent_id, 0)
-                    new_pos = current_pos + 1000
-                    node_data["position"] = new_pos
-                    parent_positions[parent_id] = new_pos
+                    node_data["position"] = next(parent_counters[node_data.get("parent_id")])
+                else:
+                    # Update the counter for this parent if a position was provided
+                    # to avoid collisions if subsequent nodes have no position.
+                    # Note: this is a simple heuristic.
+                    pos = int(node_data["position"])
+                    parent_counters[node_data.get("parent_id")] = count(pos + 1000, 1000)
+
+                # Calculate path and level
+                parent_id = node_data.get("parent_id")
+                parent = created_nodes.get(parent_id)
+                if not parent and parent_id:
+                    parent = session.get(models.Node, parent_id)
+
+                path, level = services.nodes.calculate_path_and_level(
+                    node_id,
+                    parent.path if parent else None,
+                    parent.level if parent else None,
+                )
+                node_data["path"] = path
+                node_data["level"] = level
 
                 db_node = models.Node(**node_data)
                 db_list.nodes.append(db_node)
                 session.add(db_node)
+                created_nodes[node_id] = db_node
 
     session.commit()
     session.refresh(db_list)
@@ -46,49 +69,11 @@ def create_list(
     return db_list
 
 
-def _get_lis_nodes(
-    group: list[NodeUpdate], existing_nodes: dict[uuid.UUID, models.Node]
-) -> set[uuid.UUID]:
-    arr = []
-    for node_in in group:
-        if node_in.id and node_in.id in existing_nodes:
-            db_node = existing_nodes[node_in.id]
-            if db_node.parent_id == node_in.parent_id:
-                arr.append((node_in.id, float(db_node.position)))
-
-    if not arr:
-        return set()
-
-    n = len(arr)
-    dp = [1] * n
-    parent = [-1] * n
-
-    for i in range(1, n):
-        for j in range(i):
-            if arr[i][1] > arr[j][1]:
-                if dp[j] + 1 > dp[i]:
-                    dp[i] = dp[j] + 1
-                    parent[i] = j
-
-    max_len = 0
-    max_idx = -1
-    for i in range(n):
-        if dp[i] >= max_len:
-            max_len = dp[i]
-            max_idx = i
-
-    lis_ids = set()
-    curr = max_idx
-    while curr != -1:
-        lis_ids.add(arr[curr][0])
-        curr = parent[curr]
-
-    return lis_ids
-
-
 def update_list(
     *, session: Session, db_list: models.NodeList, list_in: NodeListUpdate
 ) -> models.NodeList:
+    from edwh_uuid7 import uuid7
+
     # Update simple fields
     update_dict = list_in.model_dump(exclude_unset=True, exclude={"nodes"})
     for key, value in update_dict.items():
@@ -109,17 +94,13 @@ def update_list(
         session.flush()
 
         # 2. Process nodes to handle content updates and repositioning
-        nodes_by_parent = {}
+        nodes_by_parent = defaultdict(list)
         for node_in in list_in.nodes:
-            if not node_in:
-                continue
-            parent_id = node_in.parent_id
-            if parent_id not in nodes_by_parent:
-                nodes_by_parent[parent_id] = []
-            nodes_by_parent[parent_id].append(node_in)
+            if node_in:
+                nodes_by_parent[node_in.parent_id].append(node_in)
 
         for parent_id, group in nodes_by_parent.items():
-            lis_ids = _get_lis_nodes(group, existing_nodes)
+            lis_ids = services.lists.get_lis_nodes(group, existing_nodes)
             prev_db_node = None
             for i, node_in in enumerate(group):
                 is_new = node_in.id is None
@@ -132,57 +113,99 @@ def update_list(
                 elif db_node:
                     db_node.content = node_in.content
                     if db_node.parent_id != parent_id:
+                        old_path = str(db_node.path)
                         db_node.parent_id = parent_id
+
+                        # Update path and level for the node itself
+                        parent = (
+                            session.get(models.Node, parent_id) if parent_id else None
+                        )
+                        new_path, new_level = services.nodes.calculate_path_and_level(
+                            db_node.id,
+                            parent.path if parent else None,
+                            parent.level if parent else None,
+                        )
+                        db_node.path = new_path
+                        db_node.level = new_level
+
+                        # Cascading update for descendants
+                        crud_nodes.apply_cascading_path_update(
+                            session,
+                            node_id=db_node.id,
+                            old_path=old_path,
+                            new_path=str(new_path),
+                        )
                         needs_reposition = True
                     else:
                         if db_node.id not in lis_ids:
                             needs_reposition = True
 
                 if needs_reposition:
-                    session.flush()  # ensure previous inserts/updates are visible to CTE
+                    session.flush()  # ensure previous inserts/updates are visible
 
                     # Find right_id: next node in group that is in LIS
-                    right_id = None
-                    for next_node_in in group[i + 1 :]:
-                        if next_node_in.id and next_node_in.id in lis_ids:
-                            right_id = next_node_in.id
-                            break
+                    right_id = next(
+                        (
+                            next_node_in.id
+                            for next_node_in in group[i + 1 :]
+                            if next_node_in.id and next_node_in.id in lis_ids
+                        ),
+                        None,
+                    )
 
                     pos = None
                     if prev_db_node and right_id:
-                        pos = get_position_between(session, prev_db_node.id, right_id)
+                        pos = crud_nodes.get_position_between(
+                            session, prev_db_node.id, right_id
+                        )
 
                         # Reindex check
                         left_pos = prev_db_node.position
                         right_pos = existing_nodes[right_id].position
-                        if (
-                            right_pos - left_pos < Decimal("1e-15")
-                        ):  # if we have no place to insert new node without rounding of position
-                            reindex_nodes(session, db_list.id, parent_id)
+                        if right_pos - left_pos < Decimal(
+                            "1e-15"
+                        ):  # if we have no place to insert
+                            crud_nodes.reindex_nodes(session, db_list.id, parent_id)
                     elif prev_db_node:
-                        pos = get_position_end(session, db_list.id, parent_id)
+                        pos = crud_nodes.get_position_end(
+                            session, db_list.id, parent_id
+                        )
                     elif right_id:
-                        pos = get_position_start(session, db_list.id, parent_id)
+                        pos = crud_nodes.get_position_start(
+                            session, db_list.id, parent_id
+                        )
                     else:
-                        pos = get_position_end(session, db_list.id, parent_id)
+                        pos = crud_nodes.get_position_end(
+                            session, db_list.id, parent_id
+                        )
 
                     if is_new:
                         node_id = uuid7()
+
+                        parent = (
+                            session.get(models.Node, parent_id) if parent_id else None
+                        )
+                        path, level = services.nodes.calculate_path_and_level(
+                            node_id,
+                            parent.path if parent else None,
+                            parent.level if parent else None,
+                        )
+
                         db_node = models.Node(
                             id=node_id,
                             nodelist_id=db_list.id,
                             parent_id=parent_id,
                             content=node_in.content,
                             position=pos,
+                            path=path,
+                            level=level,
                         )
                         db_list.nodes.append(db_node)
                         session.add(db_node)
-                        # We must add this new node to existing_nodes so it can be referenced
-                        # by subsequent right_id calculations if they were somehow in LIS
-                        # (though new nodes are never in lis_ids, but it's safe to have it)
                         existing_nodes[node_id] = db_node
                     else:
-                        db_node.position = pos
+                        if db_node:
+                            db_node.position = pos
 
                 if db_node:
                     prev_db_node = db_node

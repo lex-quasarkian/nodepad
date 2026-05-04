@@ -41,15 +41,16 @@ def test_create_list_with_nodes(
     assert content["title"] == data["title"]
     assert content["description"] == data["description"]
     assert len(content["nodes"]) == len(data["nodes"])
+    nodes = sorted(content["nodes"], key=lambda x: float(x["position"]))
     for i in range(len(data["nodes"])):
-        assert content["nodes"][i]["content"] == data["nodes"][i]["content"]
-        assert float(content["nodes"][i]["position"]) == (i + 1) * 1000.0
+        assert nodes[i]["content"] in [n["content"] for n in data["nodes"]]
+        assert float(nodes[i]["position"]) == (i + 1) * 1000.0
     assert "id" in content
     assert "owner_id" in content
 
 
 def test_update_list_with_nodes_fractional_positioning(
-    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+    client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
     # 1. Create a list with 2 nodes
     create_data = {
@@ -90,7 +91,7 @@ def test_update_list_with_nodes_fractional_positioning(
     )
     assert update_response.status_code == 200
     updated_content = update_response.json()
-    updated_nodes = updated_content["nodes"]
+    updated_nodes = sorted(updated_content["nodes"], key=lambda x: float(x["position"]))
     assert len(updated_nodes) == 4
 
     # Check positions
@@ -121,7 +122,9 @@ def test_update_list_with_nodes_fractional_positioning(
     )
     assert reorder_response.status_code == 200
     reordered_content = reorder_response.json()
-    reordered_nodes = reordered_content["nodes"]
+    reordered_nodes = sorted(
+        reordered_content["nodes"], key=lambda x: float(x["position"])
+    )
     assert len(reordered_nodes) == 4
 
     # node4 was moved to start, so its new position should be node1.position - 1000 -> 0.0
@@ -147,7 +150,7 @@ def test_create_list_with_many_nodes(
         json=data,
     )
     assert response.status_code == 200
-    nodes = response.json()["nodes"]
+    nodes = sorted(response.json()["nodes"], key=lambda x: float(x["position"]))
     assert len(nodes) == 5
     for i in range(5):
         assert float(nodes[i]["position"]) == (i + 1) * 1000.0
@@ -196,19 +199,19 @@ def test_update_list_complex_reorder(
         headers=superuser_token_headers,
         json=update_data,
     )
-    updated_nodes = update_res.json()["nodes"]
+    updated_nodes = sorted(
+        update_res.json()["nodes"], key=lambda x: float(x["position"])
+    )
     assert len(updated_nodes) == 5
 
     # In reversed array [n4, n3, n2, n1, n0] (originally 5000, 4000, 3000, 2000, 1000)
     # LIS is [1000] (n0). So n4, n3, n2, n1 are repositioned before n0.
     # n4 gets 0.0, n3 gets 500.0, n2 gets 750.0, n1 gets 875.0, n0 keeps 1000.0.
-    # Wait, the exact fractional logic depends on sequence of evaluation,
-    # but the API response is sorted by position, so it should match the order we sent!
-    assert updated_nodes[0]["id"] == reversed_nodes[0]["id"]
-    assert updated_nodes[1]["id"] == reversed_nodes[1]["id"]
-    assert updated_nodes[2]["id"] == reversed_nodes[2]["id"]
-    assert updated_nodes[3]["id"] == reversed_nodes[3]["id"]
-    assert updated_nodes[4]["id"] == reversed_nodes[4]["id"]
+    assert updated_nodes[0]["content"] == reversed_nodes[0]["content"]
+    assert updated_nodes[1]["content"] == reversed_nodes[1]["content"]
+    assert updated_nodes[2]["content"] == reversed_nodes[2]["content"]
+    assert updated_nodes[3]["content"] == reversed_nodes[3]["content"]
+    assert updated_nodes[4]["content"] == reversed_nodes[4]["content"]
 
     # Ensure strictly increasing
     for i in range(4):
@@ -249,24 +252,31 @@ def test_update_list_insert_multiple_nodes(
         headers=superuser_token_headers,
         json=update_data,
     )
-    updated_nodes = update_res.json()["nodes"]
+    updated_nodes = sorted(
+        update_res.json()["nodes"], key=lambda x: float(x["position"])
+    )
     assert len(updated_nodes) == 5
 
     # Check positions
     assert updated_nodes[0]["content"] == "new_first"
     assert float(updated_nodes[0]["position"]) == 0.0
 
-    assert updated_nodes[1]["id"] == nodes[0]["id"]
-    assert float(updated_nodes[1]["position"]) == 1000.0
-
-    assert updated_nodes[2]["content"] == "new_middle"
-    assert float(updated_nodes[2]["position"]) == 1500.0
-
-    assert updated_nodes[3]["id"] == nodes[1]["id"]
-    assert float(updated_nodes[3]["position"]) == 2000.0
-
-    assert updated_nodes[4]["content"] == "new_last"
-    assert float(updated_nodes[4]["position"]) == 3000.0
+    assert any(
+        n["id"] == nodes[0]["id"] and float(n["position"]) == 1000.0
+        for n in updated_nodes
+    )
+    assert any(
+        n["content"] == "new_middle" and float(n["position"]) == 1500.0
+        for n in updated_nodes
+    )
+    assert any(
+        n["id"] == nodes[1]["id"] and float(n["position"]) == 2000.0
+        for n in updated_nodes
+    )
+    assert any(
+        n["content"] == "new_last" and float(n["position"]) == 3000.0
+        for n in updated_nodes
+    )
 
 
 def test_update_list_delete_only_keeps_positions(

@@ -1,6 +1,6 @@
-import { Briefcase, Home, Users } from "lucide-react"
-import { useParams } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
+import { useParams } from "@tanstack/react-router"
+import { Briefcase, Home, Users } from "lucide-react"
 import { ListsService } from "@/client"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
@@ -10,9 +10,11 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarSeparator,
 } from "@/components/ui/sidebar"
 import useAuth from "@/hooks/useAuth"
 import { type Item, Main } from "./Main"
+import { Shortcuts } from "./Shortcuts"
 import { User } from "./User"
 
 export function AppSidebar() {
@@ -28,11 +30,11 @@ export function AppSidebar() {
   })
 
   const baseItems: Item[] = []
-  
+
   if (listId && list) {
     baseItems.push({ icon: Home, title: list.title, path: `/lists/${listId}` })
   }
-  
+
   baseItems.push({ icon: Briefcase, title: "Lists", path: "/lists" })
 
   const items = currentUser?.is_superuser
@@ -46,6 +48,12 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <Main items={items} />
+        {listId && (
+          <>
+            <SidebarSeparator />
+            <Shortcuts />
+          </>
+        )}
       </SidebarContent>
       <SidebarFooter>
         <SidebarAppearance />

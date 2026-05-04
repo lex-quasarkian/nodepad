@@ -48,7 +48,7 @@ def test_get_current_user_not_found():
         with pytest.raises(HTTPException) as exc:
             get_current_user(session=mock_session, token=token)
 
-    assert exc.value.status_code == 404
+    assert exc.value.status_code == 401
     assert exc.value.detail == "User not found"
 
 

@@ -15,10 +15,10 @@ from app.schemas import (
     NodeListUpdate,
 )
 
-router = APIRouter(prefix="/lists", tags=["lists"])
+lists_router = APIRouter(prefix="/lists", tags=["lists"])
 
 
-@router.get("/", response_model=NodeListsPublic)
+@lists_router.get("/", response_model=NodeListsPublic)
 def read_lists(
     session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
 ) -> Any:
@@ -52,10 +52,12 @@ def read_lists(
         )
         lists = list(session.scalars(statement).all())
 
-    return NodeListsPublic(data=lists, count=count)
+    return NodeListsPublic(
+        data=[NodeListPublic.model_validate(list_) for list_ in lists], count=count
+    )
 
 
-@router.get("/{id}", response_model=NodeListPublic)
+@lists_router.get("/{id}", response_model=NodeListPublic)
 def read_list(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> Any:
     """
     Get list by ID.
@@ -68,7 +70,7 @@ def read_list(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> 
     return list
 
 
-@router.post("/", response_model=NodeListPublic)
+@lists_router.post("/", response_model=NodeListPublic)
 def create_list(
     *, session: SessionDep, current_user: CurrentUser, list_in: NodeListCreate
 ) -> Any:
@@ -82,7 +84,7 @@ def create_list(
     return list_obj
 
 
-@router.put("/{id}", response_model=NodeListPublic)
+@lists_router.put("/{id}", response_model=NodeListPublic)
 def update_list(
     *,
     session: SessionDep,
@@ -99,14 +101,12 @@ def update_list(
     if not current_user.is_superuser and (list_obj.owner_id != current_user.id):
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    list_obj = crud.lists.update_list(
-        session=session, db_list=list_obj, list_in=list_in
-    )
+    list_obj = crud.lists.update_list(session=session, db_list=list_obj, list_in=list_in)
 
     return list_obj
 
 
-@router.delete("/{id}")
+@lists_router.delete("/{id}")
 def delete_list(
     session: SessionDep, current_user: CurrentUser, id: uuid.UUID
 ) -> Message:
