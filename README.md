@@ -50,6 +50,39 @@ Nodepad is designed to be keyboard-first. Use these shortcuts in the list editin
 
 ---
 
+## Production Deployment
+
+This project is designed to be deployed using Docker Compose and Traefik for automatic HTTPS.
+
+### 1. Prerequisites
+- A server with Docker and Docker Compose installed.
+- A domain name pointing to your server's IP.
+
+### 2. Setup
+1. Clone the repository on your server.
+2. Create a `.env` file from the example:
+   ```bash
+   cp .env.example .env
+   ```
+3. Edit the `.env` file and set the following:
+   - `DOMAIN`: Your production domain (e.g., `example.com`).
+   - `SECRET_KEY`: A long, random string.
+   - `FIRST_SUPERUSER_PASSWORD`: A strong password for the admin.
+   - `POSTGRES_PASSWORD`: A strong password for the database.
+   - `ENVIRONMENT`: Set to `production`.
+
+### 3. Deploy
+Run the production compose file:
+```bash
+docker compose up -d
+```
+Traefik will automatically acquire TLS certificates from Let's Encrypt for:
+- `api.example.com` (Backend)
+- `dashboard.example.com` (Frontend)
+- `adminer.example.com` (Database tool)
+
+---
+
 ## Disclaimer #
 
 This project is a practice application created to improve my skills in frontend and backend development. It is **not an official product**. All design elements and content are original or freely available for use.
