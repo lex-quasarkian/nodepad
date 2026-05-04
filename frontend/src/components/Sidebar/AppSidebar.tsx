@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { useParams } from "@tanstack/react-router"
+import { useParams, useRouterState } from "@tanstack/react-router"
 import { Briefcase, Home, Users } from "lucide-react"
 import { ListsService } from "@/client"
 
@@ -21,7 +21,10 @@ export function AppSidebar() {
   const { user: currentUser } = useAuth()
 
   const params = useParams({ strict: false }) as Record<string, string>
-  const listId = params?.listId
+  const state = useRouterState()
+  
+  // Try to get listId from params, or from the first match that has it
+  const listId = params?.listId || (state.matches.find(m => (m.params as any)?.listId)?.params as any)?.listId
 
   const { data: list } = useQuery({
     queryKey: ["lists", listId],
