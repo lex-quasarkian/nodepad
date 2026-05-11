@@ -8,6 +8,15 @@
             -- shift arrows should start keymode,
             --  --  should side arrows start editing mode
             -- Tab in edit mode should start move unsaved node  *without* finishing text input!
+    - [Feature] Tags?
+    - [Feature] Insert date/time with hotkey?    
+    - [Feature] Server-sided Encryption?
+    - [Performance] Make load testing for backend/frontend. Check on
+    [Performance] Redis? YAGNI??? KISS??
+        How to index/reindex/invalidate on writes?
+        TBD after clearing usecases and UX/UI   
+
+
     - [UX/UI] Research which keyboard patterns to imprint and follow
 
     - [UX/UI Microtasks] 

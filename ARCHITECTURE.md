@@ -9,9 +9,9 @@ Nodepad is a hierarchical outliner application designed for creating and managin
 It consists of a **FastAPI** backend and a **React** frontend, coordinated via a REST API.
 
 The core data structure is a **NodeList**, which contains a tree of **Nodes**.
-- **Hierarchy**: Represented using both `parent_id` pointers and a materialized `path` (using PostgreSQL `ltree`).
-- **Ordering**: Handled via **fractional indexing** (decimal positions), allowing for O(1) insertions between any two nodes.
-- **Consistency**: The backend uses a Longest Increasing Subsequence (LIS) algorithm to handle complex subtree movements while maintaining a stable order.
+- **Hierarchy**: Represented using both `parent_id` pointers and a materialized `path` (using PostgreSQL `ltree`). Path calculations reside in `backend/app/services/nodes.py`.
+- **Ordering**: Handled via **fractional indexing** (decimal positions). Logic for calculating new positions resides in `backend/app/crud/nodes.py`.
+- **Consistency**: The backend uses a **Longest Increasing Subsequence (LIS)** algorithm (`backend/app/services/lists.py`) to handle complex subtree movements while maintaining a stable order with minimal DB writes.
 
 The analyzer (and this documentation) keeps everything in memory; we never do direct IO in the business logic layer.
 
@@ -24,9 +24,15 @@ FastAPI routes. This is the **API Boundary**. It handles HTTP requests, validate
 
 ### `backend/app/services/`
 The "brain" of the application. Contains domain logic that is independent of HTTP or Database implementation details.
-- `lists.py`: Implements the LIS algorithm and fractional position calculations.
+- `lists.py`: Implements the **Longest Increasing Subsequence (LIS)** algorithm to minimize database writes during bulk reordering.
+- `nodes.py`: Contains pure logic for calculating hierarchical `path` and `level` strings.
 
 **Architecture Invariant**: Services never handle raw HTTP objects (like `Request` or `BackgroundTasks`) directly. They receive and return pure data.
+
+### `backend/app/crud/`
+Database-specific implementation of domain logic.
+- `nodes.py`: Implements **Fractional Indexing** logic (`get_position_between`, `get_position_start/end`) and handles **Cascading Updates** for hierarchical paths using raw SQL for performance.
+- `reindex_nodes`: A utility to reset positions to integers (multiples of 1000) to prevent floating-point precision issues over time.
 
 ### `backend/app/models/`
 SQLAlchemy models.
