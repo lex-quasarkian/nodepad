@@ -19,6 +19,10 @@ Nodepad is a powerful, hierarchical outliner application designed for creating a
 
 ## Development Workflow
 
+
+[Log - ideas and changes history](LOG.md)
+[Architecture - tech stack and architecture description](ARCHITECTURE.md)
+
 ### Docker Compose Watch
 
 This project uses Docker Compose's native `watch` feature for a seamless development experience. It automatically syncs changes to the containers and rebuilds them when necessary.
