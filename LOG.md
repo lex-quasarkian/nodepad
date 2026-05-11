@@ -20,6 +20,7 @@
     - [UX/UI] Research which keyboard patterns to imprint and follow
 
     - [UX/UI Microtasks] 
+    - [UX/UI] Reduce bottom margin for root node adding
     - [UX/UI] Keymode indicator, Keypressing highlight on edit?
     - [UX/UI] Endline icons when editing : enter !, cancel !, menu?
         - Keymode/Edit mode
