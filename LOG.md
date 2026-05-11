@@ -1,6 +1,6 @@
 ## [2026-05-11]
 - [Todo]
-    - [Repo] Add project roadmap to README, add this file link, add 
+    - [FIXME] [UX/UI] sidebar scrollbar isn't needed 
     - [UX/UI Macro] Research which usecases app should support
         - Endline icons: enter !, cancel !, 
         - Keymode/Edit mode
@@ -21,8 +21,11 @@
 
     - [UX/UI Microtasks] 
     - [UX/UI] Keymode indicator, Keypressing highlight on edit?
+    - [UX/UI] Endline icons when editing : enter !, cancel !, menu?
+        - Keymode/Edit mode
     - [UX/UI] Add redo to shortcuts. Add redo to keyhints @ sidebar
-    - [UX/UI] Add context menu?
+    - [UX/UI] Add mouse context menu? 
+    - [UX/UI] Add only line-context menu?
 
 
 - [Last changes]
